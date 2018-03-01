@@ -1,0 +1,6 @@
+C:\Program Files (x86)\Cypress\PSoC Creator\4.1\PSoC Creator\psoc\content\default\CyAnnotationLibrary\CyAnnotationLibrary.cylib\CyAnnotationLibrary.cyprj|e70f5146-8ff6-4a02-ab35-75e9f2fda04f
+\\Files\dgitau\PSoC Creator\4.1\Downloads ( 4.1).cylib\Downloads ( 4.1).cyprj|8f2ac869-3ecb-4f5e-a0b5-65b3c14c1cdf
+C:\Program Files (x86)\Cypress\PSoC Creator\4.1\PSoC Creator\psoc\content\cycomponentlibraryupdates\CyComponentLibraryUpdates.cylib\CyComponentLibraryUpdates.cyprj|5feab988-5cd3-4b6d-ab63-19fa61a2b56a
+C:\Program Files (x86)\Cypress\PSoC Creator\4.1\PSoC Creator\psoc\content\cycomponentlibrary\CyComponentLibrary.cylib\CyComponentLibrary.cyprj|954a50db-6606-453e-9153-914aeb49f5ac
+C:\Program Files (x86)\Cypress\PSoC Creator\4.1\PSoC Creator\psoc\content\cyprimitives\CyPrimitives.cylib\CyPrimitives.cyprj|2521c261-523b-45ac-9814-796c9a68fca4
+C:\Users\dgitau\PSoC Creator\Workspace01\SpeedControl.cydsn\SpeedControl.cyprj|e1004250-d198-4001-b066-dd8f55efcfcf
