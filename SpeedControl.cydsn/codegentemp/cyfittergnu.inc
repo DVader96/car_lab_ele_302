@@ -240,40 +240,6 @@
 .set PWM_PWMUDB_sP8_pwmdp_u0__MSK_DP_AUX_CTL_REG, CYREG_B1_UDB05_MSK_ACTL
 .set PWM_PWMUDB_sP8_pwmdp_u0__PER_DP_AUX_CTL_REG, CYREG_B1_UDB05_MSK_ACTL
 
-/* Pin_1 */
-.set Pin_1__0__INTTYPE, CYREG_PICU0_INTTYPE6
-.set Pin_1__0__MASK, 0x40
-.set Pin_1__0__PC, CYREG_PRT0_PC6
-.set Pin_1__0__PORT, 0
-.set Pin_1__0__SHIFT, 6
-.set Pin_1__AG, CYREG_PRT0_AG
-.set Pin_1__AMUX, CYREG_PRT0_AMUX
-.set Pin_1__BIE, CYREG_PRT0_BIE
-.set Pin_1__BIT_MASK, CYREG_PRT0_BIT_MASK
-.set Pin_1__BYP, CYREG_PRT0_BYP
-.set Pin_1__CTL, CYREG_PRT0_CTL
-.set Pin_1__DM0, CYREG_PRT0_DM0
-.set Pin_1__DM1, CYREG_PRT0_DM1
-.set Pin_1__DM2, CYREG_PRT0_DM2
-.set Pin_1__DR, CYREG_PRT0_DR
-.set Pin_1__INP_DIS, CYREG_PRT0_INP_DIS
-.set Pin_1__INTTYPE_BASE, CYDEV_PICU_INTTYPE_PICU0_BASE
-.set Pin_1__LCD_COM_SEG, CYREG_PRT0_LCD_COM_SEG
-.set Pin_1__LCD_EN, CYREG_PRT0_LCD_EN
-.set Pin_1__MASK, 0x40
-.set Pin_1__PORT, 0
-.set Pin_1__PRT, CYREG_PRT0_PRT
-.set Pin_1__PRTDSI__CAPS_SEL, CYREG_PRT0_CAPS_SEL
-.set Pin_1__PRTDSI__DBL_SYNC_IN, CYREG_PRT0_DBL_SYNC_IN
-.set Pin_1__PRTDSI__OE_SEL0, CYREG_PRT0_OE_SEL0
-.set Pin_1__PRTDSI__OE_SEL1, CYREG_PRT0_OE_SEL1
-.set Pin_1__PRTDSI__OUT_SEL0, CYREG_PRT0_OUT_SEL0
-.set Pin_1__PRTDSI__OUT_SEL1, CYREG_PRT0_OUT_SEL1
-.set Pin_1__PRTDSI__SYNC_OUT, CYREG_PRT0_SYNC_OUT
-.set Pin_1__PS, CYREG_PRT0_PS
-.set Pin_1__SHIFT, 6
-.set Pin_1__SLW, CYREG_PRT0_SLW
-
 /* Timer */
 .set Timer_TimerUDB_rstSts_stsreg__0__MASK, 0x01
 .set Timer_TimerUDB_rstSts_stsreg__0__POS, 0
@@ -355,11 +321,11 @@
 .set Timer_TimerUDB_sT16_timerdp_u1__PER_DP_AUX_CTL_REG, CYREG_B0_UDB03_MSK_ACTL
 
 /* hall_effect_sensor */
-.set hall_effect_sensor__0__INTTYPE, CYREG_PICU0_INTTYPE0
-.set hall_effect_sensor__0__MASK, 0x01
-.set hall_effect_sensor__0__PC, CYREG_PRT0_PC0
+.set hall_effect_sensor__0__INTTYPE, CYREG_PICU0_INTTYPE6
+.set hall_effect_sensor__0__MASK, 0x40
+.set hall_effect_sensor__0__PC, CYREG_PRT0_PC6
 .set hall_effect_sensor__0__PORT, 0
-.set hall_effect_sensor__0__SHIFT, 0
+.set hall_effect_sensor__0__SHIFT, 6
 .set hall_effect_sensor__AG, CYREG_PRT0_AG
 .set hall_effect_sensor__AMUX, CYREG_PRT0_AMUX
 .set hall_effect_sensor__BIE, CYREG_PRT0_BIE
@@ -374,7 +340,7 @@
 .set hall_effect_sensor__INTTYPE_BASE, CYDEV_PICU_INTTYPE_PICU0_BASE
 .set hall_effect_sensor__LCD_COM_SEG, CYREG_PRT0_LCD_COM_SEG
 .set hall_effect_sensor__LCD_EN, CYREG_PRT0_LCD_EN
-.set hall_effect_sensor__MASK, 0x01
+.set hall_effect_sensor__MASK, 0x40
 .set hall_effect_sensor__PORT, 0
 .set hall_effect_sensor__PRT, CYREG_PRT0_PRT
 .set hall_effect_sensor__PRTDSI__CAPS_SEL, CYREG_PRT0_CAPS_SEL
@@ -385,7 +351,7 @@
 .set hall_effect_sensor__PRTDSI__OUT_SEL1, CYREG_PRT0_OUT_SEL1
 .set hall_effect_sensor__PRTDSI__SYNC_OUT, CYREG_PRT0_SYNC_OUT
 .set hall_effect_sensor__PS, CYREG_PRT0_PS
-.set hall_effect_sensor__SHIFT, 0
+.set hall_effect_sensor__SHIFT, 6
 .set hall_effect_sensor__SLW, CYREG_PRT0_SLW
 
 /* Miscellaneous */

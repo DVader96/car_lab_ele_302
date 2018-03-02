@@ -31,8 +31,6 @@
 #include "Hall_Effect_LED_aliases.h"
 #include "Hall_Effect_LED.h"
 #include "Clock_2.h"
-#include "Pin_1_aliases.h"
-#include "Pin_1.h"
 #include "LCD_LCDPort_aliases.h"
 #include "LCD_LCDPort.h"
 #include "core_cm3_psoc5.h"

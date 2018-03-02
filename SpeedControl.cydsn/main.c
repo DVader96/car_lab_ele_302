@@ -16,14 +16,14 @@
  * We'll not be using k_d in this control loop
  */
 
-double k_p = 0.35;  /* Gives us a fast rise time */
-double k_i = 0;  /* Allows us to correct the steady state error */
+double k_p = 10;  /* Gives us a fast rise time */
+double k_i = 10;  /* Allows us to correct the steady state error */
 double k_d = 0;  /* Dampens the system and reduces overshoot */
 
 double timer_max = 65535.0f;
 
 double wheel_diam_feet = 2.5f / 12.0f; /* Diameter of the wheel in feet */
-double clock_frequency = 5000.0f; /* Frequency of the clock in Hz */
+double clock_frequency = 10000.0f; /* Frequency of the clock in Hz */
 double desired_speed = 4.0f;   /* Reference speed 4ft/sec */
 int magnet_flag = 0;    /* Keeps track of magnet passes */
 
@@ -57,7 +57,7 @@ int magnet_flag = 0;    /* Keeps track of magnet passes */
  */
 
 CY_ISR(magnet_inter) {
-    char str_buffer[16];
+    /* char str_buffer[16]; */
     magnet_flag = 1;
     Timer_ReadStatusRegister();
     /*
@@ -77,6 +77,7 @@ int main(void) {
     double time_delta = timer_max / 2.0f;
     char str_buffer[16];
     int magnet_view_counter = 0;
+    double time_diff;
     
     double error = input_speed - desired_speed;
     double err_sum = 0;
@@ -96,9 +97,12 @@ int main(void) {
     
     for(;;) {
         
-        sprintf(str_buffer, "%d", magnet_view_counter);
+        /*sprintf(str_buffer, "%d", magnet_view_counter);
         LCD_Position(0, 0);
-        LCD_PrintString(str_buffer);
+        LCD_PrintString(str_buffer); */
+        
+        
+      
         
         if (magnet_flag == 1) {
             
@@ -106,11 +110,19 @@ int main(void) {
             
             current_time = (double)(Timer_ReadCapture());
             
+           
+            
+            
             /* Run this block only after the first magnet has been seen */
             if (magnet_view_counter != 1) {
                 
                 /* previous - current because the timer is counting down. */
-                time_delta = (previous_time - current_time) / (clock_frequency * timer_max);
+                time_diff = previous_time - current_time;
+                if (time_diff < 0) {
+                    time_diff+=timer_max;
+                }
+                time_delta = (time_diff) / (clock_frequency);
+                
                 input_speed = magnet_separation_distance / time_delta;
                 
                 /* Compute the error variables */
@@ -118,16 +130,19 @@ int main(void) {
                 err_sum += error * time_delta;
         
                 /* Compute the PID output */
-                output_speed = k_p * error + k_i * err_sum;
+                output_speed = k_p * error + k_i * err_sum + 20;
         
                 /* Send the output signal to the MOSFET controlling the motor */
                 PWM_WriteCompare(output_speed);
-                
+                 //PWM_WriteCompare(7);
                 /* Communicate the speed to the user */ 
                 /* sprintf(str_buffer, "I:%.2f, O:%.2f", input_speed, output_speed); */
                 
                 if (magnet_view_counter % 10 == 0) {
-                    sprintf(str_buffer, "%.2f", input_speed);
+                    /*sprintf(str_buffer, "%.2f", input_speed);
+                    LCD_Position(0, 0);
+                    LCD_PrintString(str_buffer);*/
+                    sprintf(str_buffer, "%.2f", error);
                     LCD_Position(0, 0);
                     LCD_PrintString(str_buffer);
                 }

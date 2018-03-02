@@ -21,14 +21,13 @@ set_io "\LCD:LCDPort(6)\" iocell 2 6
 set_io "\LCD:LCDPort(5)\" iocell 2 5
 set_io "\LCD:LCDPort(3)\" iocell 2 3
 set_io "\LCD:LCDPort(4)\" iocell 2 4
-set_io "Pin_1(0)" iocell 0 6
 set_location "\Timer:TimerUDB:sCTRLReg:SyncCtl:ctrlreg\" controlcell 2 4 6 
 set_location "\PWM:PWMUDB:genblk1:ctrlreg\" controlcell 3 0 6 
-set_location "ClockBlock" clockblockcell -1 -1 0
-set_io "hall_effect_sensor(0)" iocell 0 0
 set_io "MOSFET(0)" iocell 3 6
+set_io "hall_effect_sensor(0)" iocell 0 6
 set_io "\LCD:LCDPort(0)\" iocell 2 0
 set_location "Magnet_Interrupt" interrupt -1 -1 0
 set_io "Hall_Effect_LED(0)" iocell 6 3
+set_location "ClockBlock" clockblockcell -1 -1 0
 set_io "\LCD:LCDPort(2)\" iocell 2 2
 set_io "\LCD:LCDPort(1)\" iocell 2 1

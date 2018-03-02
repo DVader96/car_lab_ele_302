@@ -42,9 +42,6 @@
   <file name="C:\Users\dgitau\PSoC Creator\Workspace01\SpeedControl.cydsn\codegentemp\Hall_Effect_LED.h" value="HEADER;;;;;Hall_Effect_LED" />
   <file name="C:\Users\dgitau\PSoC Creator\Workspace01\SpeedControl.cydsn\codegentemp\Clock_2.c" value="SOURCE_C;CortexM3;;;;Clock_2" />
   <file name="C:\Users\dgitau\PSoC Creator\Workspace01\SpeedControl.cydsn\codegentemp\Clock_2.h" value="HEADER;;;;;Clock_2" />
-  <file name="C:\Users\dgitau\PSoC Creator\Workspace01\SpeedControl.cydsn\codegentemp\Pin_1_aliases.h" value="HEADER;;;;;Pin_1" />
-  <file name="C:\Users\dgitau\PSoC Creator\Workspace01\SpeedControl.cydsn\codegentemp\Pin_1.c" value="SOURCE_C;CortexM3;;;;Pin_1" />
-  <file name="C:\Users\dgitau\PSoC Creator\Workspace01\SpeedControl.cydsn\codegentemp\Pin_1.h" value="HEADER;;;;;Pin_1" />
   <file name="C:\Users\dgitau\PSoC Creator\Workspace01\SpeedControl.cydsn\codegentemp\LCD_LCDPort_aliases.h" value="HEADER;;;;;LCD_LCDPort" />
   <file name="C:\Users\dgitau\PSoC Creator\Workspace01\SpeedControl.cydsn\codegentemp\LCD_LCDPort.c" value="SOURCE_C;CortexM3;;;;LCD_LCDPort" />
   <file name="C:\Users\dgitau\PSoC Creator\Workspace01\SpeedControl.cydsn\codegentemp\LCD_LCDPort.h" value="HEADER;;;;;LCD_LCDPort" />

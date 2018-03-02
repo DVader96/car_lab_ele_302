@@ -240,40 +240,6 @@
 #define PWM_PWMUDB_sP8_pwmdp_u0__MSK_DP_AUX_CTL_REG CYREG_B1_UDB05_MSK_ACTL
 #define PWM_PWMUDB_sP8_pwmdp_u0__PER_DP_AUX_CTL_REG CYREG_B1_UDB05_MSK_ACTL
 
-/* Pin_1 */
-#define Pin_1__0__INTTYPE CYREG_PICU0_INTTYPE6
-#define Pin_1__0__MASK 0x40u
-#define Pin_1__0__PC CYREG_PRT0_PC6
-#define Pin_1__0__PORT 0u
-#define Pin_1__0__SHIFT 6u
-#define Pin_1__AG CYREG_PRT0_AG
-#define Pin_1__AMUX CYREG_PRT0_AMUX
-#define Pin_1__BIE CYREG_PRT0_BIE
-#define Pin_1__BIT_MASK CYREG_PRT0_BIT_MASK
-#define Pin_1__BYP CYREG_PRT0_BYP
-#define Pin_1__CTL CYREG_PRT0_CTL
-#define Pin_1__DM0 CYREG_PRT0_DM0
-#define Pin_1__DM1 CYREG_PRT0_DM1
-#define Pin_1__DM2 CYREG_PRT0_DM2
-#define Pin_1__DR CYREG_PRT0_DR
-#define Pin_1__INP_DIS CYREG_PRT0_INP_DIS
-#define Pin_1__INTTYPE_BASE CYDEV_PICU_INTTYPE_PICU0_BASE
-#define Pin_1__LCD_COM_SEG CYREG_PRT0_LCD_COM_SEG
-#define Pin_1__LCD_EN CYREG_PRT0_LCD_EN
-#define Pin_1__MASK 0x40u
-#define Pin_1__PORT 0u
-#define Pin_1__PRT CYREG_PRT0_PRT
-#define Pin_1__PRTDSI__CAPS_SEL CYREG_PRT0_CAPS_SEL
-#define Pin_1__PRTDSI__DBL_SYNC_IN CYREG_PRT0_DBL_SYNC_IN
-#define Pin_1__PRTDSI__OE_SEL0 CYREG_PRT0_OE_SEL0
-#define Pin_1__PRTDSI__OE_SEL1 CYREG_PRT0_OE_SEL1
-#define Pin_1__PRTDSI__OUT_SEL0 CYREG_PRT0_OUT_SEL0
-#define Pin_1__PRTDSI__OUT_SEL1 CYREG_PRT0_OUT_SEL1
-#define Pin_1__PRTDSI__SYNC_OUT CYREG_PRT0_SYNC_OUT
-#define Pin_1__PS CYREG_PRT0_PS
-#define Pin_1__SHIFT 6u
-#define Pin_1__SLW CYREG_PRT0_SLW
-
 /* Timer */
 #define Timer_TimerUDB_rstSts_stsreg__0__MASK 0x01u
 #define Timer_TimerUDB_rstSts_stsreg__0__POS 0
@@ -355,11 +321,11 @@
 #define Timer_TimerUDB_sT16_timerdp_u1__PER_DP_AUX_CTL_REG CYREG_B0_UDB03_MSK_ACTL
 
 /* hall_effect_sensor */
-#define hall_effect_sensor__0__INTTYPE CYREG_PICU0_INTTYPE0
-#define hall_effect_sensor__0__MASK 0x01u
-#define hall_effect_sensor__0__PC CYREG_PRT0_PC0
+#define hall_effect_sensor__0__INTTYPE CYREG_PICU0_INTTYPE6
+#define hall_effect_sensor__0__MASK 0x40u
+#define hall_effect_sensor__0__PC CYREG_PRT0_PC6
 #define hall_effect_sensor__0__PORT 0u
-#define hall_effect_sensor__0__SHIFT 0u
+#define hall_effect_sensor__0__SHIFT 6u
 #define hall_effect_sensor__AG CYREG_PRT0_AG
 #define hall_effect_sensor__AMUX CYREG_PRT0_AMUX
 #define hall_effect_sensor__BIE CYREG_PRT0_BIE
@@ -374,7 +340,7 @@
 #define hall_effect_sensor__INTTYPE_BASE CYDEV_PICU_INTTYPE_PICU0_BASE
 #define hall_effect_sensor__LCD_COM_SEG CYREG_PRT0_LCD_COM_SEG
 #define hall_effect_sensor__LCD_EN CYREG_PRT0_LCD_EN
-#define hall_effect_sensor__MASK 0x01u
+#define hall_effect_sensor__MASK 0x40u
 #define hall_effect_sensor__PORT 0u
 #define hall_effect_sensor__PRT CYREG_PRT0_PRT
 #define hall_effect_sensor__PRTDSI__CAPS_SEL CYREG_PRT0_CAPS_SEL
@@ -385,7 +351,7 @@
 #define hall_effect_sensor__PRTDSI__OUT_SEL1 CYREG_PRT0_OUT_SEL1
 #define hall_effect_sensor__PRTDSI__SYNC_OUT CYREG_PRT0_SYNC_OUT
 #define hall_effect_sensor__PS CYREG_PRT0_PS
-#define hall_effect_sensor__SHIFT 0u
+#define hall_effect_sensor__SHIFT 6u
 #define hall_effect_sensor__SLW CYREG_PRT0_SLW
 
 /* Miscellaneous */

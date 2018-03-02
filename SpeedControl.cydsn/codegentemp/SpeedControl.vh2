@@ -2,7 +2,7 @@
 --	Conversion of SpeedControl.v to vh2:
 --
 --	Cypress Semiconductor - WARP Version 6.3 IR 41
---	Thu Mar 01 22:28:09 2018
+--	Fri Mar 02 00:22:35 2018
 --
 
 USE cypress.cypress.all;
@@ -395,7 +395,7 @@ SIGNAL \PWM:Net_113\ : bit;
 SIGNAL \PWM:Net_107\ : bit;
 SIGNAL \PWM:Net_114\ : bit;
 SIGNAL tmpOE__hall_effect_sensor_net_0 : bit;
-SIGNAL Net_48 : bit;
+SIGNAL Net_104 : bit;
 SIGNAL tmpIO_0__hall_effect_sensor_net_0 : bit;
 TERMINAL tmpSIOVREF__hall_effect_sensor_net_0 : bit;
 SIGNAL tmpINTERRUPT_0__hall_effect_sensor_net_0 : bit;
@@ -658,16 +658,11 @@ SIGNAL \Timer:TimerUDB:sT16:timerdp:f1_blk_stat_reg_1\ : bit;
 ATTRIBUTE port_state_att of \Timer:TimerUDB:sT16:timerdp:f1_blk_stat_reg_1\:SIGNAL IS 2;
 SIGNAL \Timer:Net_102\ : bit;
 SIGNAL \Timer:Net_266\ : bit;
-SIGNAL Net_101 : bit;
 SIGNAL tmpOE__Hall_Effect_LED_net_0 : bit;
 SIGNAL tmpFB_0__Hall_Effect_LED_net_0 : bit;
 SIGNAL tmpIO_0__Hall_Effect_LED_net_0 : bit;
 TERMINAL tmpSIOVREF__Hall_Effect_LED_net_0 : bit;
 SIGNAL tmpINTERRUPT_0__Hall_Effect_LED_net_0 : bit;
-SIGNAL tmpOE__Pin_1_net_0 : bit;
-SIGNAL tmpIO_0__Pin_1_net_0 : bit;
-TERMINAL tmpSIOVREF__Pin_1_net_0 : bit;
-SIGNAL tmpINTERRUPT_0__Pin_1_net_0 : bit;
 SIGNAL \PWM:PWMUDB:min_kill_reg\\D\ : bit;
 SIGNAL \PWM:PWMUDB:prevCapture\\D\ : bit;
 SIGNAL \PWM:PWMUDB:trig_last\\D\ : bit;
@@ -712,7 +707,7 @@ one <=  ('1') ;
 
 \PWM:PWMUDB:pwm_i\ <= ((\PWM:PWMUDB:runmode_enable\ and \PWM:PWMUDB:cmp1_less\));
 
-\Timer:TimerUDB:capt_fifo_load\ <= ((not \Timer:TimerUDB:capture_last\ and Net_48 and \Timer:TimerUDB:control_7\));
+\Timer:TimerUDB:capt_fifo_load\ <= ((not \Timer:TimerUDB:capture_last\ and Net_104 and \Timer:TimerUDB:control_7\));
 
 \Timer:TimerUDB:status_tc\ <= ((\Timer:TimerUDB:control_7\ and \Timer:TimerUDB:per_zero\));
 
@@ -1065,7 +1060,7 @@ hall_effect_sensor:cy_psoc3_pins_v1_10
 		input_buffer_sel=>"00")
 	PORT MAP(oe=>(one),
 		y=>(zero),
-		fb=>Net_48,
+		fb=>Net_104,
 		analog=>(open),
 		io=>(tmpIO_0__hall_effect_sensor_net_0),
 		siovref=>(tmpSIOVREF__hall_effect_sensor_net_0),
@@ -1281,7 +1276,7 @@ hall_effect_sensor:cy_psoc3_pins_v1_10
 Magnet_Interrupt:cy_isr_v1_0
 	GENERIC MAP(int_type=>"00",
 		is_nmi=>'0')
-	PORT MAP(int_signal=>Net_101);
+	PORT MAP(int_signal=>Net_104);
 Hall_Effect_LED:cy_psoc3_pins_v1_10
 	GENERIC MAP(id=>"279932cd-8b0d-4421-9a43-1b6fc9dcf147",
 		drive_mode=>"110",
@@ -1339,7 +1334,7 @@ Hall_Effect_LED:cy_psoc3_pins_v1_10
 		ovt_hyst_trim=>"0",
 		input_buffer_sel=>"00")
 	PORT MAP(oe=>(one),
-		y=>Net_48,
+		y=>Net_104,
 		fb=>(tmpFB_0__Hall_Effect_LED_net_0),
 		analog=>(open),
 		io=>(tmpIO_0__Hall_Effect_LED_net_0),
@@ -1357,81 +1352,11 @@ Clock_2:cy_clock_v1_0
 		id=>"9901f76a-a97f-4837-bb40-9dbec45dfd32",
 		source_clock_id=>"",
 		divisor=>0,
-		period=>"10000000000",
+		period=>"100000000000",
 		is_direct=>'0',
 		is_digital=>'1')
 	PORT MAP(clock_out=>Net_95,
 		dig_domain_out=>open);
-Pin_1:cy_psoc3_pins_v1_10
-	GENERIC MAP(id=>"8d318d8b-cf7b-4b6b-b02c-ab1c5c49d0ba",
-		drive_mode=>"001",
-		ibuf_enabled=>"1",
-		init_dr_st=>"0",
-		input_sync=>"0",
-		input_clk_en=>'0',
-		input_sync_mode=>"0",
-		intr_mode=>"00",
-		invert_in_clock=>'0',
-		invert_in_clock_en=>'0',
-		invert_in_reset=>'0',
-		invert_out_clock=>'0',
-		invert_out_clock_en=>'0',
-		invert_out_reset=>'0',
-		io_voltage=>"",
-		layout_mode=>"CONTIGUOUS",
-		output_conn=>"0",
-		output_sync=>"0",
-		output_clk_en=>'0',
-		output_mode=>"0",
-		output_reset=>'0',
-		output_clock_mode=>"0",
-		oe_sync=>"0",
-		oe_conn=>"0",
-		oe_reset=>'0',
-		pin_aliases=>"",
-		pin_mode=>"I",
-		por_state=>4,
-		sio_group_cnt=>0,
-		sio_hifreq=>"00000000",
-		sio_hyst=>"1",
-		sio_ibuf=>"00000000",
-		sio_info=>"00",
-		sio_obuf=>"00000000",
-		sio_refsel=>"00000000",
-		sio_vtrip=>"00000000",
-		sio_vohsel=>"00000000",
-		slew_rate=>"0",
-		spanning=>'0',
-		sw_only=>'0',
-		vtrip=>"00",
-		width=>1,
-		port_alias_required=>'0',
-		port_alias_group=>"",
-		use_annotation=>"0",
-		pa_in_clock=>-1,
-		pa_in_clock_en=>-1,
-		pa_in_reset=>-1,
-		pa_out_clock=>-1,
-		pa_out_clock_en=>-1,
-		pa_out_reset=>-1,
-		ovt_needed=>"0",
-		ovt_slew_control=>"00",
-		ovt_hyst_trim=>"0",
-		input_buffer_sel=>"00")
-	PORT MAP(oe=>(one),
-		y=>(zero),
-		fb=>Net_101,
-		analog=>(open),
-		io=>(tmpIO_0__Pin_1_net_0),
-		siovref=>(tmpSIOVREF__Pin_1_net_0),
-		annotation=>(open),
-		in_clock=>zero,
-		in_clock_en=>one,
-		in_reset=>zero,
-		out_clock=>zero,
-		out_clock_en=>one,
-		out_reset=>zero,
-		interrupt=>tmpINTERRUPT_0__Pin_1_net_0);
 \PWM:PWMUDB:min_kill_reg\:cy_dsrff
 	PORT MAP(d=>one,
 		s=>zero,
@@ -1513,7 +1438,7 @@ Pin_1:cy_psoc3_pins_v1_10
 		clk=>\PWM:PWMUDB:ClockOutFromEnBlock\,
 		q=>\PWM:PWMUDB:tc_i_reg\);
 \Timer:TimerUDB:capture_last\:cy_dff
-	PORT MAP(d=>Net_48,
+	PORT MAP(d=>Net_104,
 		clk=>\Timer:TimerUDB:ClockOutFromEnBlock\,
 		q=>\Timer:TimerUDB:capture_last\);
 \Timer:TimerUDB:tc_reg_i\:cy_dff
