@@ -7,7 +7,7 @@
       <Tool Name="prebuild" Command="" Options="" />
       <Tool Name="assembler" Command="arm-none-eabi-as.exe" Options="-mcpu=cortex-m3 -mthumb -I. -IGenerated_Source\PSoC5 -alh=${OutputDir}/${CompileFile}.lst -g -W" />
       <Tool Name="compiler" Command="arm-none-eabi-gcc.exe" Options="-mcpu=cortex-m3 -mthumb -I. -IGenerated_Source\PSoC5 -Wa,-alh=${OutputDir}/${CompileFile}.lst -g -D DEBUG -D CY_CORE_ID=0 -Wall -ffunction-sections -ffat-lto-objects -Og" />
-      <Tool Name="linker" Command="arm-none-eabi-gcc.exe" Options="-mcpu=cortex-m3 -mthumb -L Generated_Source\PSoC5 -Wl,-Map,${OutputDir}/${ProjectShortName}.map -T Generated_Source\PSoC5\cm3gcc.ld -specs=nano.specs -Wl,--gc-sections -g -ffunction-sections -Og -ffat-lto-objects" />
+      <Tool Name="linker" Command="arm-none-eabi-gcc.exe" Options="-mcpu=cortex-m3 -mthumb -L Generated_Source\PSoC5 -Wl,-Map,${OutputDir}/${ProjectShortName}.map -T Generated_Source\PSoC5\cm3gcc.ld -specs=nano.specs -Wl,--gc-sections -u _printf_float -g -ffunction-sections -Og -ffat-lto-objects" />
       <Tool Name="postbuild" Command="" Options="" />
     </Toolchain>
     <Toolchain Name="ARM MDK Generic" Selected="False">
@@ -103,17 +103,22 @@
           <File BuildType="BUILD" Toolchain="">Generated_Source\PSoC5\Timer.c</File>
           <File BuildType="BUILD" Toolchain="">Generated_Source\PSoC5\Timer.h</File>
           <File BuildType="BUILD" Toolchain="">Generated_Source\PSoC5\Timer_PM.c</File>
-          <File BuildType="BUILD" Toolchain="">Generated_Source\PSoC5\Counter_Interrupt.c</File>
-          <File BuildType="BUILD" Toolchain="">Generated_Source\PSoC5\Counter_Interrupt.h</File>
-          <File BuildType="BUILD" Toolchain="">Generated_Source\PSoC5\Timer_Reset_aliases.h</File>
-          <File BuildType="BUILD" Toolchain="">Generated_Source\PSoC5\Timer_Reset.c</File>
-          <File BuildType="BUILD" Toolchain="">Generated_Source\PSoC5\Timer_Reset.h</File>
           <File BuildType="BUILD" Toolchain="">Generated_Source\PSoC5\MOSFET_aliases.h</File>
           <File BuildType="BUILD" Toolchain="">Generated_Source\PSoC5\MOSFET.c</File>
           <File BuildType="BUILD" Toolchain="">Generated_Source\PSoC5\MOSFET.h</File>
           <File BuildType="BUILD" Toolchain="">Generated_Source\PSoC5\hall_effect_sensor_aliases.h</File>
           <File BuildType="BUILD" Toolchain="">Generated_Source\PSoC5\hall_effect_sensor.c</File>
           <File BuildType="BUILD" Toolchain="">Generated_Source\PSoC5\hall_effect_sensor.h</File>
+          <File BuildType="BUILD" Toolchain="">Generated_Source\PSoC5\Hall_Effect_LED_aliases.h</File>
+          <File BuildType="BUILD" Toolchain="">Generated_Source\PSoC5\Hall_Effect_LED.c</File>
+          <File BuildType="BUILD" Toolchain="">Generated_Source\PSoC5\Hall_Effect_LED.h</File>
+          <File BuildType="BUILD" Toolchain="">Generated_Source\PSoC5\Magnet_Interrupt.c</File>
+          <File BuildType="BUILD" Toolchain="">Generated_Source\PSoC5\Magnet_Interrupt.h</File>
+          <File BuildType="BUILD" Toolchain="">Generated_Source\PSoC5\Clock_2.c</File>
+          <File BuildType="BUILD" Toolchain="">Generated_Source\PSoC5\Clock_2.h</File>
+          <File BuildType="BUILD" Toolchain="">Generated_Source\PSoC5\Pin_1_aliases.h</File>
+          <File BuildType="BUILD" Toolchain="">Generated_Source\PSoC5\Pin_1.c</File>
+          <File BuildType="BUILD" Toolchain="">Generated_Source\PSoC5\Pin_1.h</File>
         </Files>
       </Folder>
       <Folder BuildType="STRICT" Path="C:\Users\dgitau\PSoC Creator\Workspace01\SpeedControl.cydsn\Export\ARM_GCC_Generic">

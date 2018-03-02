@@ -250,7 +250,9 @@
   <Data key="DataVersionKey" value="2" />
   <Group key="DWRInstGuidMapping">
     <Group key="Pin">
-      <Data key="8d318d8b-cf7b-4b6b-b02c-ab1c5c49d0ba" value="Button" />
+      <Data key="8d318d8b-cf7b-4b6b-b02c-ab1c5c49d0ba" value="Pin_1" />
+      <Data key="279932cd-8b0d-4421-9a43-1b6fc9dcf147" value="Hall_Effect_LED" />
+      <Data key="763553c7-8e0d-4d59-96ef-3ba65af583da" value="Time_Reset" />
       <Data key="a04e7aa5-0799-4619-86fc-1172c54f6a3a" value="hall_effect_sensor" />
       <Data key="e851a3b9-efb8-48be-bbb8-b303b216c393" value="MOSFET" />
       <Data key="f9edef6d-665f-4c04-8829-7730dfa63ee9/ed092b9b-d398-4703-be89-cebf998501f6" value="LCD_LCDPort" />
@@ -3342,12 +3344,17 @@
   <Group key="Pin2">
     <Group key="8d318d8b-cf7b-4b6b-b02c-ab1c5c49d0ba">
       <Group key="0">
-        <Data key="Port Format" value="6,1" />
+        <Data key="Port Format" value="0,6" />
       </Group>
     </Group>
-    <Group key="a04e7aa5-0799-4619-86fc-1172c54f6a3a">
+    <Group key="279932cd-8b0d-4421-9a43-1b6fc9dcf147">
       <Group key="0">
-        <Data key="Port Format" value="0,6" />
+        <Data key="Port Format" value="6,3" />
+      </Group>
+    </Group>
+    <Group key="763553c7-8e0d-4d59-96ef-3ba65af583da">
+      <Group key="0">
+        <Data key="Port Format" value="4,1" />
       </Group>
     </Group>
     <Group key="e851a3b9-efb8-48be-bbb8-b303b216c393">
@@ -3378,7 +3385,11 @@
         <Data key="Port Format" value="2,6" />
       </Group>
     </Group>
-    <Group key="UnAssigned Pins" />
+    <Group key="UnAssigned Pins">
+      <Group key="a04e7aa5-0799-4619-86fc-1172c54f6a3a">
+        <Data key="0" value="131644348748791033" />
+      </Group>
+    </Group>
   </Group>
   <Group key="PlaceDir">
     <Data key="count" value="0" />
@@ -3391,7 +3402,7 @@
     <Data key="CYDEV_DEBUGGING_DPS" value="SWD_SWV" />
     <Data key="CYDEV_DEBUGGING_XRES" value="False" />
     <Data key="CYDEV_ECC_ENABLE" value="False" />
-    <Data key="CYDEV_HEAP_SIZE" value="0x80" />
+    <Data key="CYDEV_HEAP_SIZE" value="0x1000" />
     <Data key="CYDEV_INSTRUCT_CACHE_ENABLED" value="True" />
     <Data key="CYDEV_PROTECTION_ENABLE" value="False" />
     <Data key="CYDEV_STACK_SIZE" value="0x0800" />

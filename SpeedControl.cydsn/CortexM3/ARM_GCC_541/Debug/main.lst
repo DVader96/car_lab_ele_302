@@ -1,4 +1,4 @@
-ARM GAS  C:\Users\dgitau\AppData\Local\Temp\ccsO7j4q.s 			page 1
+ARM GAS  C:\Users\dgitau\AppData\Local\Temp\ccBBiuSO.s 			page 1
 
 
    1              		.syntax unified
@@ -28,1581 +28,1899 @@ ARM GAS  C:\Users\dgitau\AppData\Local\Temp\ccsO7j4q.s 			page 1
   25              	magnet_inter:
   26              	.LFB64:
   27              		.file 1 "main.c"
-   1:main.c        **** /* ========================================
+   1:main.c        **** /* ================================================================================
    2:main.c        ****  *
    3:main.c        ****  * Chege Gitau & Eric Ham
    4:main.c        ****  * ELE 302
    5:main.c        ****  * Speed Control
    6:main.c        ****  *
-   7:main.c        ****  * ========================================
-   8:main.c        **** */
-   9:main.c        **** #include "project.h"
-  10:main.c        **** #include <stdio.h>
-  11:main.c        **** 
+   7:main.c        ****  * ================================================================================
+   8:main.c        ****  */
+   9:main.c        **** 
+  10:main.c        **** #include "project.h"
+  11:main.c        **** #include <stdio.h>
   12:main.c        **** 
-  13:main.c        **** static double k_p = 0;  /* Gives us a fast rise time */
-  14:main.c        **** static double k_i = 0;  /* Allows us to correct the steady state error */
-  15:main.c        **** static double k_d = 0;  /* Dampens the system and reduces overshoot */
-  16:main.c        **** 
-  17:main.c        **** static double wheel_diam_inches = 2.5;
+  13:main.c        **** /* General Strategy:
+  14:main.c        ****  * Update k_p till we get to the target speed 
+  15:main.c        ****  * Tune k_i till we get few errors
+  16:main.c        ****  * We'll not be using k_d in this control loop
+  17:main.c        ****  */
   18:main.c        **** 
-  19:main.c        **** static double desired_speed = 4;   /* Reference speed 4ft/sec */
-  20:main.c        **** 
-  21:main.c        **** static int magnet_flag = 0;    /* Keeps track of magnet passes */
+  19:main.c        **** double k_p = 0.35;  /* Gives us a fast rise time */
+  20:main.c        **** double k_i = 0;  /* Allows us to correct the steady state error */
+  21:main.c        **** double k_d = 0;  /* Dampens the system and reduces overshoot */
   22:main.c        **** 
-  23:main.c        **** static int index_of_magnet = 0;
-  24:main.c        **** static double magnet_view_times[] = {0, 0, 0, 0, 0};
-  25:main.c        **** 
-  26:main.c        **** 
-  27:main.c        **** CY_ISR(magnet_inter) {
-  28              		.loc 1 27 0
+  23:main.c        **** double timer_max = 65535.0f;
+  24:main.c        **** 
+  25:main.c        **** double wheel_diam_feet = 2.5f / 12.0f; /* Diameter of the wheel in feet */
+  26:main.c        **** double clock_frequency = 5000.0f; /* Frequency of the clock in Hz */
+  27:main.c        **** double desired_speed = 4.0f;   /* Reference speed 4ft/sec */
+  28:main.c        **** int magnet_flag = 0;    /* Keeps track of magnet passes */
+  29:main.c        **** 
+  30:main.c        **** /* Changes Made:
+ARM GAS  C:\Users\dgitau\AppData\Local\Temp\ccBBiuSO.s 			page 2
+
+
+  31:main.c        ****  * Structure of the if-else block
+  32:main.c        ****  * Measured and set wheel_diam_inches to 2.5 inches
+  33:main.c        ****  * Defined magnet_separation_distance and got the input speed.
+  34:main.c        ****  * Added the PWM write statement to give the new speed.
+  35:main.c        ****  * Print out the recently measured speed to the LCD display.
+  36:main.c        ****  * The timer output is in clock cycles. Divided by frequency to get the time.
+  37:main.c        ****  * Update the strategy for updating k_i, k_p and k_d.
+  38:main.c        ****  * We don't need the array of magnet_view_times. We need the last & the current reading only.
+  39:main.c        ****  *
+  40:main.c        ****  * 1st attempt: 
+  41:main.c        ****  * The motor wasn't working. Prof. Jeff showed me that the grounds aren't connected.
+  42:main.c        ****  * To check for connectedness, use the noisy part of the special multimeter.
+  43:main.c        ****  * To fix the ground problem, we connected the two grounds together.
+  44:main.c        ****  *
+  45:main.c        ****  * 2nd attempt:
+  46:main.c        ****  * We need a way of converting from ft/sec to a number between 0 and 255 for the PWM
+  47:main.c        ****  * 0 means always off, while 255 means always on.
+  48:main.c        ****  * We're using the feet_per_sec_to_counts_factor to handle this conversion.
+  49:main.c        ****  * Actually, feet_per_sec_to_counts_factor is doing double work. The conversion should be
+  50:main.c        ****  * handled by the values of k_p and k_i that we choose. We've now deleted feet_per_sec_to_counts_fa
+  51:main.c        ****  *
+  52:main.c        ****  * 3rd attempt
+  53:main.c        ****  * We're trying to display the speed of the car on the LCD. However, the if-elses in the infinite f
+  54:main.c        ****  * are not working as expected. 
+  55:main.c        ****  * We added an LED to ensure that the interrupt is firing.
+  56:main.c        ****  *
+  57:main.c        ****  */
+  58:main.c        **** 
+  59:main.c        **** CY_ISR(magnet_inter) {
+  28              		.loc 1 59 0
   29              		.cfi_startproc
   30              		@ args = 0, pretend = 0, frame = 0
-ARM GAS  C:\Users\dgitau\AppData\Local\Temp\ccsO7j4q.s 			page 2
-
-
   31              		@ frame_needed = 0, uses_anonymous_args = 0
-  32              		@ link register save eliminated.
-  28:main.c        ****     magnet_flag = 1;
-  33              		.loc 1 28 0
-  34 0000 034B     		ldr	r3, .L2
-  35 0002 0122     		movs	r2, #1
-  36 0004 1A60     		str	r2, [r3]
-  29:main.c        ****     index_of_magnet += 1;
-  37              		.loc 1 29 0
-  38 0006 5A68     		ldr	r2, [r3, #4]
-  39 0008 0132     		adds	r2, r2, #1
-  40 000a 5A60     		str	r2, [r3, #4]
-  41 000c 7047     		bx	lr
-  42              	.L3:
-  43 000e 00BF     		.align	2
-  44              	.L2:
-  45 0010 00000000 		.word	.LANCHOR0
-  46              		.cfi_endproc
-  47              	.LFE64:
-  48              		.size	magnet_inter, .-magnet_inter
-  49              		.global	__aeabi_ui2d
-  50              		.global	__aeabi_dsub
-  51              		.global	__aeabi_d2uiz
+  32 0000 08B5     		push	{r3, lr}
+  33              		.cfi_def_cfa_offset 8
+  34              		.cfi_offset 3, -8
+  35              		.cfi_offset 14, -4
+  60:main.c        ****     char str_buffer[16];
+  61:main.c        ****     magnet_flag = 1;
+  36              		.loc 1 61 0
+  37 0002 0122     		movs	r2, #1
+  38 0004 024B     		ldr	r3, .L3
+  39 0006 1A60     		str	r2, [r3]
+  62:main.c        ****     Timer_ReadStatusRegister();
+  40              		.loc 1 62 0
+  41 0008 FFF7FEFF 		bl	Timer_ReadStatusRegister
+  42              	.LVL0:
+  43 000c 08BD     		pop	{r3, pc}
+  44              	.L4:
+  45 000e 00BF     		.align	2
+  46              	.L3:
+  47 0010 00000000 		.word	.LANCHOR0
+  48              		.cfi_endproc
+  49              	.LFE64:
+  50              		.size	magnet_inter, .-magnet_inter
+  51              		.global	__aeabi_dmul
   52              		.global	__aeabi_ddiv
-  53              		.global	__aeabi_dmul
-  54              		.global	__aeabi_dadd
-  55              		.section	.text.main,"ax",%progbits
-  56              		.align	2
-  57              		.global	main
-  58              		.thumb
-  59              		.thumb_func
-  60              		.type	main, %function
-  61              	main:
-  62              	.LFB65:
-  30:main.c        **** }
-  31:main.c        **** 
-  32:main.c        **** int main(void)
-  33:main.c        **** {
-  63              		.loc 1 33 0
-  64              		.cfi_startproc
-  65              		@ args = 0, pretend = 0, frame = 24
-  66              		@ frame_needed = 0, uses_anonymous_args = 0
-  67 0000 2DE9F04F 		push	{r4, r5, r6, r7, r8, r9, r10, fp, lr}
-  68              		.cfi_def_cfa_offset 36
-  69              		.cfi_offset 4, -36
-  70              		.cfi_offset 5, -32
-  71              		.cfi_offset 6, -28
-  72              		.cfi_offset 7, -24
-  73              		.cfi_offset 8, -20
-  74              		.cfi_offset 9, -16
-  75              		.cfi_offset 10, -12
-  76              		.cfi_offset 11, -8
-  77              		.cfi_offset 14, -4
-  78 0004 87B0     		sub	sp, sp, #28
-  79              		.cfi_def_cfa_offset 64
-  34:main.c        ****     double input_speed, output_speed, magnet_separation_distance;
-  35:main.c        ****     unsigned long time_delta;
-ARM GAS  C:\Users\dgitau\AppData\Local\Temp\ccsO7j4q.s 			page 3
+ARM GAS  C:\Users\dgitau\AppData\Local\Temp\ccBBiuSO.s 			page 3
 
 
-  36:main.c        ****     double error, err_sum, err_derivative, last_error;
-  37:main.c        ****     int current_index, previous_index;
-  38:main.c        ****     char str_buffer[16];
-  39:main.c        ****     
-  40:main.c        ****     CyGlobalIntEnable; /* Enable global interrupts. */
-  80              		.loc 1 40 0
-  81              		.syntax unified
-  82              	@ 40 "main.c" 1
-  83 0006 62B6     		CPSIE   i
-  84              	@ 0 "" 2
-  41:main.c        **** 
-  42:main.c        ****     /* Initialization Code */
-  43:main.c        ****     PWM_Start();
-  85              		.loc 1 43 0
-  86              		.thumb
-  87              		.syntax unified
-  88 0008 FFF7FEFF 		bl	PWM_Start
-  89              	.LVL0:
-  44:main.c        ****     Timer_Start();
-  90              		.loc 1 44 0
-  91 000c FFF7FEFF 		bl	Timer_Start
-  92              	.LVL1:
-  45:main.c        ****     Counter_Interrupt_Start();
-  93              		.loc 1 45 0
-  94 0010 FFF7FEFF 		bl	Counter_Interrupt_Start
-  95              	.LVL2:
-  46:main.c        ****     Counter_Interrupt_SetVector(magnet_inter);
-  96              		.loc 1 46 0
-  97 0014 5248     		ldr	r0, .L9+8
-  98 0016 FFF7FEFF 		bl	Counter_Interrupt_SetVector
-  99              	.LVL3:
-  47:main.c        ****     
-  48:main.c        ****     LCD_Position(0, 0);
- 100              		.loc 1 48 0
- 101 001a 0021     		movs	r1, #0
- 102 001c 0846     		mov	r0, r1
- 103 001e FFF7FEFF 		bl	LCD_Position
- 104              	.LVL4:
-  49:main.c        ****     LCD_PrintString("Speed Control!");
- 105              		.loc 1 49 0
- 106 0022 5048     		ldr	r0, .L9+12
- 107 0024 FFF7FEFF 		bl	LCD_PrintString
- 108              	.LVL5:
-  50:main.c        ****     magnet_separation_distance = (22.0f / 7.0f) * wheel_diam_inches / 5.0f;
-  51:main.c        ****     last_error = 0;
- 109              		.loc 1 51 0
- 110 0028 4FF0000A 		mov	r10, #0
- 111 002c 4FF0000B 		mov	fp, #0
- 112              	.LVL6:
- 113              	.L5:
-  52:main.c        ****     
-  53:main.c        ****     /* Changes Made:
-  54:main.c        ****      * Structure of the if-else block
-  55:main.c        ****      * Measured and set wheel_diam_inches to 2.5 inches
-  56:main.c        ****      * Defined magnet_separation_distance and got the input speed.
-  57:main.c        ****      * Added the PWM write statement to give the new speed.
-  58:main.c        ****      * Print out the recently measured speed to the LCD display.
-ARM GAS  C:\Users\dgitau\AppData\Local\Temp\ccsO7j4q.s 			page 4
+  53              		.global	__aeabi_ui2d
+  54              		.global	__aeabi_dsub
+  55              		.global	__aeabi_dadd
+  56              		.global	__aeabi_d2uiz
+  57              		.section	.text.main,"ax",%progbits
+  58              		.align	2
+  59              		.global	main
+  60              		.thumb
+  61              		.thumb_func
+  62              		.type	main, %function
+  63              	main:
+  64              	.LFB65:
+  63:main.c        ****     /*
+  64:main.c        ****     sprintf(str_buffer, "Magnet");
+  65:main.c        ****     LCD_Position(0, 0);
+  66:main.c        ****     LCD_PrintString(str_buffer); */
+  67:main.c        **** }
+  68:main.c        **** 
+  69:main.c        **** int main(void) {
+  65              		.loc 1 69 0
+  66              		.cfi_startproc
+  67              		@ args = 0, pretend = 0, frame = 40
+  68              		@ frame_needed = 0, uses_anonymous_args = 0
+  69 0000 2DE9F04F 		push	{r4, r5, r6, r7, r8, r9, r10, fp, lr}
+  70              		.cfi_def_cfa_offset 36
+  71              		.cfi_offset 4, -36
+  72              		.cfi_offset 5, -32
+  73              		.cfi_offset 6, -28
+  74              		.cfi_offset 7, -24
+  75              		.cfi_offset 8, -20
+  76              		.cfi_offset 9, -16
+  77              		.cfi_offset 10, -12
+  78              		.cfi_offset 11, -8
+  79              		.cfi_offset 14, -4
+  80 0004 8BB0     		sub	sp, sp, #44
+  81              		.cfi_def_cfa_offset 80
+  70:main.c        ****     CyGlobalIntEnable; /* Enable global interrupts. */
+  82              		.loc 1 70 0
+  83              		.syntax unified
+  84              	@ 70 "main.c" 1
+  85 0006 62B6     		CPSIE   i
+  86              	@ 0 "" 2
+  87              	.LVL1:
+  71:main.c        ****     
+  72:main.c        ****     double input_speed = 0.0f;
+  73:main.c        ****     double output_speed = 0.0f;
+  74:main.c        ****     double magnet_separation_distance = (22.0f / 7.0f) * wheel_diam_feet / 5.0f;
+  88              		.loc 1 74 0
+  89              		.thumb
+  90              		.syntax unified
+  91 0008 654C     		ldr	r4, .L11+8
+  92 000a 63A3     		adr	r3, .L11
+  93 000c D3E90023 		ldrd	r2, [r3]
+  94 0010 D4E90001 		ldrd	r0, [r4]
+  95 0014 FFF7FEFF 		bl	__aeabi_dmul
+  96              	.LVL2:
+  97 0018 0022     		movs	r2, #0
+ARM GAS  C:\Users\dgitau\AppData\Local\Temp\ccBBiuSO.s 			page 4
 
 
-  59:main.c        ****      */
-  60:main.c        ****     
-  61:main.c        ****     for(;;) { 
-  62:main.c        ****         
-  63:main.c        ****         if (magnet_flag == 1) {
- 114              		.loc 1 63 0
- 115 0030 4D4B     		ldr	r3, .L9+16
- 116 0032 1B68     		ldr	r3, [r3]
- 117 0034 012B     		cmp	r3, #1
- 118 0036 FBD1     		bne	.L5
-  64:main.c        ****             
-  65:main.c        ****             current_index = index_of_magnet % 5;
- 119              		.loc 1 65 0
- 120 0038 4B4D     		ldr	r5, .L9+16
- 121 003a 6A68     		ldr	r2, [r5, #4]
- 122 003c 4B4C     		ldr	r4, .L9+20
- 123 003e 84FB0234 		smull	r3, r4, r4, r2
- 124 0042 D317     		asrs	r3, r2, #31
- 125 0044 C3EB6404 		rsb	r4, r3, r4, asr #1
- 126 0048 04EB8404 		add	r4, r4, r4, lsl #2
- 127 004c 141B     		subs	r4, r2, r4
- 128              	.LVL7:
-  66:main.c        ****             magnet_view_times[current_index] = Timer_ReadCapture();
- 129              		.loc 1 66 0
- 130 004e FFF7FEFF 		bl	Timer_ReadCapture
- 131              	.LVL8:
- 132 0052 FFF7FEFF 		bl	__aeabi_ui2d
- 133              	.LVL9:
- 134 0056 05EBC404 		add	r4, r5, r4, lsl #3
- 135              	.LVL10:
- 136 005a C4E90201 		strd	r0, [r4, #8]
-  67:main.c        ****         
-  68:main.c        ****             if (index_of_magnet != 1) {
- 137              		.loc 1 68 0
- 138 005e 6B68     		ldr	r3, [r5, #4]
- 139 0060 012B     		cmp	r3, #1
- 140 0062 72D0     		beq	.L6
-  69:main.c        ****                 
-  70:main.c        ****                 previous_index = (index_of_magnet - 1) % 5; 
- 141              		.loc 1 70 0
- 142 0064 5A1E     		subs	r2, r3, #1
- 143 0066 414B     		ldr	r3, .L9+20
- 144 0068 83FB0234 		smull	r3, r4, r3, r2
- 145 006c D317     		asrs	r3, r2, #31
- 146 006e C3EB6403 		rsb	r3, r3, r4, asr #1
- 147 0072 03EB8303 		add	r3, r3, r3, lsl #2
- 148 0076 D31A     		subs	r3, r2, r3
- 149              	.LVL11:
-  71:main.c        ****             
-  72:main.c        ****                 /* previous - current because the timer is counting down. */
-  73:main.c        ****                 time_delta = (double)(magnet_view_times[previous_index] - magnet_view_times[current
- 150              		.loc 1 73 0
- 151 0078 05EBC304 		add	r4, r5, r3, lsl #3
- 152 007c 0246     		mov	r2, r0
- 153 007e 0B46     		mov	r3, r1
- 154              	.LVL12:
- 155 0080 D4E90201 		ldrd	r0, [r4, #8]
-ARM GAS  C:\Users\dgitau\AppData\Local\Temp\ccsO7j4q.s 			page 5
+  98 001a 624B     		ldr	r3, .L11+12
+  99 001c FFF7FEFF 		bl	__aeabi_ddiv
+ 100              	.LVL3:
+ 101 0020 CDE90401 		strd	r0, [sp, #16]
+ 102              	.LVL4:
+  75:main.c        ****     double previous_time = timer_max;
+ 103              		.loc 1 75 0
+ 104 0024 D4E90267 		ldrd	r6, [r4, #8]
+ 105              	.LVL5:
+  76:main.c        ****     double current_time = timer_max / 2.0f;
+  77:main.c        ****     double time_delta = timer_max / 2.0f;
+  78:main.c        ****     char str_buffer[16];
+  79:main.c        ****     int magnet_view_counter = 0;
+  80:main.c        ****     
+  81:main.c        ****     double error = input_speed - desired_speed;
+  82:main.c        ****     double err_sum = 0;
+  83:main.c        **** 
+  84:main.c        ****     /* Initialization Code */
+  85:main.c        ****     PWM_Start();
+ 106              		.loc 1 85 0
+ 107 0028 FFF7FEFF 		bl	PWM_Start
+ 108              	.LVL6:
+  86:main.c        ****     Timer_Start();
+ 109              		.loc 1 86 0
+ 110 002c FFF7FEFF 		bl	Timer_Start
+ 111              	.LVL7:
+  87:main.c        ****     Magnet_Interrupt_Start();
+ 112              		.loc 1 87 0
+ 113 0030 FFF7FEFF 		bl	Magnet_Interrupt_Start
+ 114              	.LVL8:
+  88:main.c        ****     LCD_Start();
+ 115              		.loc 1 88 0
+ 116 0034 FFF7FEFF 		bl	LCD_Start
+ 117              	.LVL9:
+  89:main.c        ****     
+  90:main.c        ****     sprintf(str_buffer, "Speed Control");
+ 118              		.loc 1 90 0
+ 119 0038 5B4B     		ldr	r3, .L11+16
+ 120 003a 06AC     		add	r4, sp, #24
+ 121 003c 0FCB     		ldmia	r3, {r0, r1, r2, r3}
+ 122 003e 07C4     		stmia	r4!, {r0, r1, r2}
+ 123 0040 2380     		strh	r3, [r4]	@ movhi
+  91:main.c        ****     LCD_Position(0, 0);
+ 124              		.loc 1 91 0
+ 125 0042 0021     		movs	r1, #0
+ 126 0044 0846     		mov	r0, r1
+ 127 0046 FFF7FEFF 		bl	LCD_Position
+ 128              	.LVL10:
+  92:main.c        ****     LCD_PrintString(str_buffer);
+ 129              		.loc 1 92 0
+ 130 004a 06A8     		add	r0, sp, #24
+ 131 004c FFF7FEFF 		bl	LCD_PrintString
+ 132              	.LVL11:
+  93:main.c        ****     
+  94:main.c        ****     /* PWM_WriteCompare(70); */
+  95:main.c        ****     Magnet_Interrupt_SetVector(magnet_inter);
+ 133              		.loc 1 95 0
+ARM GAS  C:\Users\dgitau\AppData\Local\Temp\ccBBiuSO.s 			page 5
 
 
- 156 0084 FFF7FEFF 		bl	__aeabi_dsub
- 157              	.LVL13:
- 158 0088 FFF7FEFF 		bl	__aeabi_d2uiz
- 159              	.LVL14:
-  74:main.c        ****                 input_speed = magnet_separation_distance / time_delta;
- 160              		.loc 1 74 0
- 161 008c FFF7FEFF 		bl	__aeabi_ui2d
- 162              	.LVL15:
- 163 0090 0646     		mov	r6, r0
- 164 0092 0F46     		mov	r7, r1
- 165 0094 0246     		mov	r2, r0
- 166 0096 0B46     		mov	r3, r1
- 167 0098 2FA1     		adr	r1, .L9
- 168 009a D1E90001 		ldrd	r0, [r1]
- 169 009e FFF7FEFF 		bl	__aeabi_ddiv
- 170              	.LVL16:
- 171 00a2 8046     		mov	r8, r0
- 172 00a4 8946     		mov	r9, r1
- 173              	.LVL17:
-  75:main.c        ****                 
-  76:main.c        ****                 /* Compute the error variables */
-  77:main.c        ****                 error = desired_speed - input_speed;
- 174              		.loc 1 77 0
- 175 00a6 0246     		mov	r2, r0
- 176 00a8 0B46     		mov	r3, r1
- 177 00aa 0020     		movs	r0, #0
- 178 00ac 3049     		ldr	r1, .L9+24
- 179 00ae FFF7FEFF 		bl	__aeabi_dsub
- 180              	.LVL18:
- 181 00b2 0446     		mov	r4, r0
- 182 00b4 0D46     		mov	r5, r1
- 183              	.LVL19:
-  78:main.c        ****                 err_sum = error * time_delta;
- 184              		.loc 1 78 0
- 185 00b6 0246     		mov	r2, r0
- 186 00b8 0B46     		mov	r3, r1
- 187 00ba 3046     		mov	r0, r6
- 188 00bc 3946     		mov	r1, r7
- 189 00be FFF7FEFF 		bl	__aeabi_dmul
- 190              	.LVL20:
- 191 00c2 CDE90001 		strd	r0, [sp]
- 192              	.LVL21:
-  79:main.c        ****                 err_derivative = (error - last_error) / time_delta;
- 193              		.loc 1 79 0
- 194 00c6 5246     		mov	r2, r10
- 195 00c8 5B46     		mov	r3, fp
- 196 00ca 2046     		mov	r0, r4
- 197              	.LVL22:
- 198 00cc 2946     		mov	r1, r5
- 199 00ce FFF7FEFF 		bl	__aeabi_dsub
- 200              	.LVL23:
- 201 00d2 3246     		mov	r2, r6
- 202 00d4 3B46     		mov	r3, r7
- 203 00d6 FFF7FEFF 		bl	__aeabi_ddiv
- 204              	.LVL24:
- 205 00da 8246     		mov	r10, r0
- 206              	.LVL25:
-ARM GAS  C:\Users\dgitau\AppData\Local\Temp\ccsO7j4q.s 			page 6
+ 134 0050 5648     		ldr	r0, .L11+20
+ 135 0052 FFF7FEFF 		bl	Magnet_Interrupt_SetVector
+ 136              	.LVL12:
+  82:main.c        **** 
+ 137              		.loc 1 82 0
+ 138 0056 4FF00008 		mov	r8, #0
+ 139 005a 4FF00009 		mov	r9, #0
+  79:main.c        ****     
+ 140              		.loc 1 79 0
+ 141 005e 4FF0000B 		mov	fp, #0
+ 142              	.LVL13:
+ 143              	.L6:
+  96:main.c        ****     
+  97:main.c        ****     for(;;) {
+  98:main.c        ****         
+  99:main.c        ****         sprintf(str_buffer, "%d", magnet_view_counter);
+ 144              		.loc 1 99 0
+ 145 0062 5A46     		mov	r2, fp
+ 146 0064 5249     		ldr	r1, .L11+24
+ 147 0066 06A8     		add	r0, sp, #24
+ 148 0068 FFF7FEFF 		bl	sprintf
+ 149              	.LVL14:
+ 100:main.c        ****         LCD_Position(0, 0);
+ 150              		.loc 1 100 0
+ 151 006c 0021     		movs	r1, #0
+ 152 006e 0846     		mov	r0, r1
+ 153 0070 FFF7FEFF 		bl	LCD_Position
+ 154              	.LVL15:
+ 101:main.c        ****         LCD_PrintString(str_buffer);
+ 155              		.loc 1 101 0
+ 156 0074 06A8     		add	r0, sp, #24
+ 157 0076 FFF7FEFF 		bl	LCD_PrintString
+ 158              	.LVL16:
+ 102:main.c        ****         
+ 103:main.c        ****         if (magnet_flag == 1) {
+ 159              		.loc 1 103 0
+ 160 007a 4E4B     		ldr	r3, .L11+28
+ 161 007c 1B68     		ldr	r3, [r3]
+ 162 007e 012B     		cmp	r3, #1
+ 163 0080 EFD1     		bne	.L6
+ 104:main.c        ****             
+ 105:main.c        ****             magnet_view_counter += 1;
+ 164              		.loc 1 105 0
+ 165 0082 0BF1010B 		add	fp, fp, #1
+ 166              	.LVL17:
+ 106:main.c        ****             
+ 107:main.c        ****             current_time = (double)(Timer_ReadCapture());
+ 167              		.loc 1 107 0
+ 168 0086 FFF7FEFF 		bl	Timer_ReadCapture
+ 169              	.LVL18:
+ 170 008a FFF7FEFF 		bl	__aeabi_ui2d
+ 171              	.LVL19:
+ 172 008e CDE90001 		strd	r0, [sp]
+ 173              	.LVL20:
+ 108:main.c        ****             
+ 109:main.c        ****             /* Run this block only after the first magnet has been seen */
+ 110:main.c        ****             if (magnet_view_counter != 1) {
+ARM GAS  C:\Users\dgitau\AppData\Local\Temp\ccBBiuSO.s 			page 6
 
 
- 207 00dc 8B46     		mov	fp, r1
- 208              	.LVL26:
-  80:main.c        ****         
-  81:main.c        ****                 /* Compute the PID output */
-  82:main.c        ****                 output_speed = k_p * error + k_i * err_sum + k_d * err_derivative;
- 209              		.loc 1 82 0
- 210 00de 0022     		movs	r2, #0
- 211 00e0 0023     		movs	r3, #0
- 212 00e2 2046     		mov	r0, r4
- 213 00e4 2946     		mov	r1, r5
- 214 00e6 FFF7FEFF 		bl	__aeabi_dmul
- 215              	.LVL27:
- 216 00ea 0646     		mov	r6, r0
- 217 00ec 0F46     		mov	r7, r1
- 218 00ee 0022     		movs	r2, #0
- 219 00f0 0023     		movs	r3, #0
- 220 00f2 DDE90001 		ldrd	r0, [sp]
- 221 00f6 FFF7FEFF 		bl	__aeabi_dmul
- 222              	.LVL28:
- 223 00fa 0246     		mov	r2, r0
- 224 00fc 0B46     		mov	r3, r1
- 225 00fe 3046     		mov	r0, r6
- 226 0100 3946     		mov	r1, r7
- 227 0102 FFF7FEFF 		bl	__aeabi_dadd
- 228              	.LVL29:
- 229 0106 0646     		mov	r6, r0
- 230 0108 0F46     		mov	r7, r1
- 231 010a 0022     		movs	r2, #0
- 232 010c 0023     		movs	r3, #0
- 233 010e 5046     		mov	r0, r10
- 234 0110 5946     		mov	r1, fp
- 235 0112 FFF7FEFF 		bl	__aeabi_dmul
- 236              	.LVL30:
- 237 0116 0246     		mov	r2, r0
- 238 0118 0B46     		mov	r3, r1
- 239 011a 3046     		mov	r0, r6
- 240 011c 3946     		mov	r1, r7
- 241 011e FFF7FEFF 		bl	__aeabi_dadd
- 242              	.LVL31:
-  83:main.c        ****         
-  84:main.c        ****                 /* Tell the motor to switch to this new speed */
-  85:main.c        ****                 PWM_WriteCompare(output_speed);
- 243              		.loc 1 85 0
- 244 0122 FFF7FEFF 		bl	__aeabi_d2uiz
- 245              	.LVL32:
- 246 0126 C0B2     		uxtb	r0, r0
- 247 0128 FFF7FEFF 		bl	PWM_WriteCompare
- 248              	.LVL33:
-  86:main.c        ****         
-  87:main.c        ****                 /* Store variables needed for the next run */
-  88:main.c        ****                 last_error = error;
-  89:main.c        ****                 
-  90:main.c        ****                 /* Communicate the speed to the user */
-  91:main.c        ****                 sprintf(str_buffer, "%f", input_speed);
- 249              		.loc 1 91 0
- 250 012c 4246     		mov	r2, r8
- 251 012e 4B46     		mov	r3, r9
-ARM GAS  C:\Users\dgitau\AppData\Local\Temp\ccsO7j4q.s 			page 7
+ 174              		.loc 1 110 0
+ 175 0092 BBF1010F 		cmp	fp, #1
+ 176 0096 69D0     		beq	.L7
+ 111:main.c        ****                 
+ 112:main.c        ****                 /* previous - current because the timer is counting down. */
+ 113:main.c        ****                 time_delta = (previous_time - current_time) / (clock_frequency * timer_max);
+ 177              		.loc 1 113 0
+ 178 0098 0246     		mov	r2, r0
+ 179 009a 0B46     		mov	r3, r1
+ 180 009c 3046     		mov	r0, r6
+ 181              	.LVL21:
+ 182 009e 3946     		mov	r1, r7
+ 183 00a0 FFF7FEFF 		bl	__aeabi_dsub
+ 184              	.LVL22:
+ 185 00a4 0446     		mov	r4, r0
+ 186 00a6 0D46     		mov	r5, r1
+ 187 00a8 DFF8F4A0 		ldr	r10, .L11+8
+ 188 00ac DAE90223 		ldrd	r2, [r10, #8]
+ 189 00b0 DAE90401 		ldrd	r0, [r10, #16]
+ 190 00b4 FFF7FEFF 		bl	__aeabi_dmul
+ 191              	.LVL23:
+ 192 00b8 0246     		mov	r2, r0
+ 193 00ba 0B46     		mov	r3, r1
+ 194 00bc 2046     		mov	r0, r4
+ 195 00be 2946     		mov	r1, r5
+ 196 00c0 FFF7FEFF 		bl	__aeabi_ddiv
+ 197              	.LVL24:
+ 198 00c4 0646     		mov	r6, r0
+ 199              	.LVL25:
+ 200 00c6 0F46     		mov	r7, r1
+ 201              	.LVL26:
+ 114:main.c        ****                 input_speed = magnet_separation_distance / time_delta;
+ 202              		.loc 1 114 0
+ 203 00c8 0246     		mov	r2, r0
+ 204 00ca 0B46     		mov	r3, r1
+ 205 00cc DDE90401 		ldrd	r0, [sp, #16]
+ 206 00d0 FFF7FEFF 		bl	__aeabi_ddiv
+ 207              	.LVL27:
+ 208 00d4 0246     		mov	r2, r0
+ 209 00d6 0B46     		mov	r3, r1
+ 210 00d8 CDE90223 		strd	r2, [sp, #8]
+ 211              	.LVL28:
+ 115:main.c        ****                 
+ 116:main.c        ****                 /* Compute the error variables */
+ 117:main.c        ****                 error = desired_speed - input_speed;
+ 212              		.loc 1 117 0
+ 213 00dc DAE90601 		ldrd	r0, [r10, #24]
+ 214 00e0 FFF7FEFF 		bl	__aeabi_dsub
+ 215              	.LVL29:
+ 216 00e4 0446     		mov	r4, r0
+ 217 00e6 0D46     		mov	r5, r1
+ 218              	.LVL30:
+ 118:main.c        ****                 err_sum += error * time_delta;
+ 219              		.loc 1 118 0
+ 220 00e8 0246     		mov	r2, r0
+ 221 00ea 0B46     		mov	r3, r1
+ 222 00ec 3046     		mov	r0, r6
+ARM GAS  C:\Users\dgitau\AppData\Local\Temp\ccBBiuSO.s 			page 7
 
 
- 252 0130 1049     		ldr	r1, .L9+28
- 253 0132 02A8     		add	r0, sp, #8
- 254 0134 FFF7FEFF 		bl	sprintf
- 255              	.LVL34:
-  92:main.c        ****                 LCD_Position(0, 0);
- 256              		.loc 1 92 0
- 257 0138 0021     		movs	r1, #0
- 258 013a 0846     		mov	r0, r1
- 259 013c FFF7FEFF 		bl	LCD_Position
- 260              	.LVL35:
-  93:main.c        ****                 LCD_PrintString(str_buffer);
- 261              		.loc 1 93 0
- 262 0140 02A8     		add	r0, sp, #8
- 263 0142 FFF7FEFF 		bl	LCD_PrintString
- 264              	.LVL36:
-  88:main.c        ****                 
- 265              		.loc 1 88 0
- 266 0146 A246     		mov	r10, r4
- 267              	.LVL37:
- 268 0148 AB46     		mov	fp, r5
- 269              	.LVL38:
- 270              	.L6:
-  94:main.c        ****             }
-  95:main.c        ****             
-  96:main.c        ****             /* Set the flag to off so that it can be updated in the next cycle */
-  97:main.c        ****             magnet_flag = 0;
- 271              		.loc 1 97 0
- 272 014a 0022     		movs	r2, #0
- 273 014c 064B     		ldr	r3, .L9+16
- 274 014e 1A60     		str	r2, [r3]
- 275 0150 6EE7     		b	.L5
- 276              	.L10:
- 277 0152 00BFAFF3 		.align	3
- 277      0080
- 278              	.L9:
- 279 0158 00000040 		.word	1073741824
- 280 015c 9224F93F 		.word	1073292434
- 281 0160 00000000 		.word	magnet_inter
- 282 0164 00000000 		.word	.LC0
- 283 0168 00000000 		.word	.LANCHOR0
- 284 016c 67666666 		.word	1717986919
- 285 0170 00001040 		.word	1074790400
- 286 0174 10000000 		.word	.LC1
- 287              		.cfi_endproc
- 288              	.LFE65:
- 289              		.size	main, .-main
- 290              		.section	.rodata.str1.4,"aMS",%progbits,1
- 291              		.align	2
- 292              	.LC0:
- 293 0000 53706565 		.ascii	"Speed Control!\000"
- 293      6420436F 
- 293      6E74726F 
- 293      6C2100
- 294 000f 00       		.space	1
- 295              	.LC1:
- 296 0010 256600   		.ascii	"%f\000"
- 297              		.bss
-ARM GAS  C:\Users\dgitau\AppData\Local\Temp\ccsO7j4q.s 			page 8
+ 223 00ee 3946     		mov	r1, r7
+ 224 00f0 FFF7FEFF 		bl	__aeabi_dmul
+ 225              	.LVL31:
+ 226 00f4 0246     		mov	r2, r0
+ 227 00f6 0B46     		mov	r3, r1
+ 228 00f8 4046     		mov	r0, r8
+ 229 00fa 4946     		mov	r1, r9
+ 230 00fc FFF7FEFF 		bl	__aeabi_dadd
+ 231              	.LVL32:
+ 232 0100 8046     		mov	r8, r0
+ 233              	.LVL33:
+ 234 0102 8946     		mov	r9, r1
+ 235              	.LVL34:
+ 119:main.c        ****         
+ 120:main.c        ****                 /* Compute the PID output */
+ 121:main.c        ****                 output_speed = k_p * error + k_i * err_sum;
+ 236              		.loc 1 121 0
+ 237 0104 DAE90823 		ldrd	r2, [r10, #32]
+ 238 0108 2046     		mov	r0, r4
+ 239 010a 2946     		mov	r1, r5
+ 240 010c FFF7FEFF 		bl	__aeabi_dmul
+ 241              	.LVL35:
+ 242 0110 0446     		mov	r4, r0
+ 243              	.LVL36:
+ 244 0112 0D46     		mov	r5, r1
+ 245 0114 274B     		ldr	r3, .L11+28
+ 246 0116 D3E90223 		ldrd	r2, [r3, #8]
+ 247 011a 4046     		mov	r0, r8
+ 248 011c 4946     		mov	r1, r9
+ 249 011e FFF7FEFF 		bl	__aeabi_dmul
+ 250              	.LVL37:
+ 251 0122 0246     		mov	r2, r0
+ 252 0124 0B46     		mov	r3, r1
+ 253 0126 2046     		mov	r0, r4
+ 254 0128 2946     		mov	r1, r5
+ 255 012a FFF7FEFF 		bl	__aeabi_dadd
+ 256              	.LVL38:
+ 122:main.c        ****         
+ 123:main.c        ****                 /* Send the output signal to the MOSFET controlling the motor */
+ 124:main.c        ****                 PWM_WriteCompare(output_speed);
+ 257              		.loc 1 124 0
+ 258 012e FFF7FEFF 		bl	__aeabi_d2uiz
+ 259              	.LVL39:
+ 260 0132 C0B2     		uxtb	r0, r0
+ 261 0134 FFF7FEFF 		bl	PWM_WriteCompare
+ 262              	.LVL40:
+ 125:main.c        ****                 
+ 126:main.c        ****                 /* Communicate the speed to the user */ 
+ 127:main.c        ****                 /* sprintf(str_buffer, "I:%.2f, O:%.2f", input_speed, output_speed); */
+ 128:main.c        ****                 
+ 129:main.c        ****                 if (magnet_view_counter % 10 == 0) {
+ 263              		.loc 1 129 0
+ 264 0138 1F4B     		ldr	r3, .L11+32
+ 265 013a 83FB0B32 		smull	r3, r2, r3, fp
+ 266 013e 4FEAEB73 		asr	r3, fp, #31
+ 267 0142 C3EBA203 		rsb	r3, r3, r2, asr #2
+ 268 0146 03EB8303 		add	r3, r3, r3, lsl #2
+ARM GAS  C:\Users\dgitau\AppData\Local\Temp\ccBBiuSO.s 			page 8
 
 
- 298              		.align	3
- 299              		.set	.LANCHOR0,. + 0
- 300              		.type	magnet_flag, %object
- 301              		.size	magnet_flag, 4
- 302              	magnet_flag:
- 303 0000 00000000 		.space	4
- 304              		.type	index_of_magnet, %object
- 305              		.size	index_of_magnet, 4
- 306              	index_of_magnet:
- 307 0004 00000000 		.space	4
- 308              		.type	magnet_view_times, %object
- 309              		.size	magnet_view_times, 40
- 310              	magnet_view_times:
- 311 0008 00000000 		.space	40
- 311      00000000 
- 311      00000000 
- 311      00000000 
- 311      00000000 
- 312              		.text
- 313              	.Letext0:
- 314              		.file 2 "c:\\program files (x86)\\cypress\\psoc creator\\4.1\\psoc creator\\import\\gnu\\arm\\5.4.
- 315              		.file 3 "c:\\program files (x86)\\cypress\\psoc creator\\4.1\\psoc creator\\import\\gnu\\arm\\5.4.
- 316              		.file 4 "Generated_Source\\PSoC5/PWM.h"
- 317              		.file 5 "Generated_Source\\PSoC5/Timer.h"
- 318              		.file 6 "Generated_Source\\PSoC5/Counter_Interrupt.h"
- 319              		.file 7 "Generated_Source\\PSoC5/LCD.h"
- 320              		.file 8 "c:\\program files (x86)\\cypress\\psoc creator\\4.1\\psoc creator\\import\\gnu\\arm\\5.4.
- 321              		.file 9 "Generated_Source\\PSoC5/core_cm3.h"
- 322              		.section	.debug_info,"",%progbits
- 323              	.Ldebug_info0:
- 324 0000 5D030000 		.4byte	0x35d
- 325 0004 0400     		.2byte	0x4
- 326 0006 00000000 		.4byte	.Ldebug_abbrev0
- 327 000a 04       		.byte	0x4
- 328 000b 01       		.uleb128 0x1
- 329 000c 6D000000 		.4byte	.LASF41
- 330 0010 0C       		.byte	0xc
- 331 0011 9E020000 		.4byte	.LASF42
- 332 0015 1D020000 		.4byte	.LASF43
- 333 0019 00000000 		.4byte	.Ldebug_ranges0+0
- 334 001d 00000000 		.4byte	0
- 335 0021 00000000 		.4byte	.Ldebug_line0
- 336 0025 02       		.uleb128 0x2
- 337 0026 08       		.byte	0x8
- 338 0027 07       		.byte	0x7
- 339 0028 EA010000 		.4byte	.LASF0
- 340 002c 02       		.uleb128 0x2
- 341 002d 04       		.byte	0x4
- 342 002e 07       		.byte	0x7
- 343 002f DD010000 		.4byte	.LASF1
- 344 0033 03       		.uleb128 0x3
- 345 0034 04       		.byte	0x4
- 346 0035 05       		.byte	0x5
- 347 0036 696E7400 		.ascii	"int\000"
- 348 003a 02       		.uleb128 0x2
- 349 003b 01       		.byte	0x1
- 350 003c 06       		.byte	0x6
-ARM GAS  C:\Users\dgitau\AppData\Local\Temp\ccsO7j4q.s 			page 9
+ 269 014a 5A00     		lsls	r2, r3, #1
+ 270 014c 9345     		cmp	fp, r2
+ 271 014e 1AD1     		bne	.L8
+ 130:main.c        ****                     sprintf(str_buffer, "%.2f", input_speed);
+ 272              		.loc 1 130 0
+ 273 0150 DDE90223 		ldrd	r2, [sp, #8]
+ 274 0154 1949     		ldr	r1, .L11+36
+ 275 0156 06A8     		add	r0, sp, #24
+ 276 0158 FFF7FEFF 		bl	sprintf
+ 277              	.LVL41:
+ 131:main.c        ****                     LCD_Position(0, 0);
+ 278              		.loc 1 131 0
+ 279 015c 0021     		movs	r1, #0
+ 280 015e 0846     		mov	r0, r1
+ 281 0160 FFF7FEFF 		bl	LCD_Position
+ 282              	.LVL42:
+ 132:main.c        ****                     LCD_PrintString(str_buffer);
+ 283              		.loc 1 132 0
+ 284 0164 06A8     		add	r0, sp, #24
+ 285 0166 FFF7FEFF 		bl	LCD_PrintString
+ 286              	.LVL43:
+ 287 016a 0CE0     		b	.L8
+ 288              	.LVL44:
+ 289              	.L7:
+ 133:main.c        ****                 }
+ 134:main.c        ****             
+ 135:main.c        ****             } else {
+ 136:main.c        ****                 
+ 137:main.c        ****                 /* Communicate the speed to the user */ 
+ 138:main.c        ****                 sprintf(str_buffer, "Skipped");
+ 290              		.loc 1 138 0
+ 291 016c 06AC     		add	r4, sp, #24
+ 292 016e 144B     		ldr	r3, .L11+40
+ 293 0170 93E80300 		ldmia	r3, {r0, r1}
+ 294              	.LVL45:
+ 295 0174 84E80300 		stmia	r4, {r0, r1}
+ 139:main.c        ****                 LCD_Position(0, 0);
+ 296              		.loc 1 139 0
+ 297 0178 0021     		movs	r1, #0
+ 298 017a 0846     		mov	r0, r1
+ 299 017c FFF7FEFF 		bl	LCD_Position
+ 300              	.LVL46:
+ 140:main.c        ****                 LCD_PrintString(str_buffer);
+ 301              		.loc 1 140 0
+ 302 0180 2046     		mov	r0, r4
+ 303 0182 FFF7FEFF 		bl	LCD_PrintString
+ 304              	.LVL47:
+ 305              	.L8:
+ 141:main.c        ****             }
+ 142:main.c        ****             
+ 143:main.c        ****             magnet_flag = 0;
+ 306              		.loc 1 143 0
+ 307 0186 0022     		movs	r2, #0
+ 308 0188 0A4B     		ldr	r3, .L11+28
+ 309 018a 1A60     		str	r2, [r3]
+ 310              	.LVL48:
+ 144:main.c        ****             previous_time = current_time;
+ARM GAS  C:\Users\dgitau\AppData\Local\Temp\ccBBiuSO.s 			page 9
 
 
- 351 003d 53000000 		.4byte	.LASF2
- 352 0041 02       		.uleb128 0x2
- 353 0042 01       		.byte	0x1
- 354 0043 08       		.byte	0x8
- 355 0044 5F000000 		.4byte	.LASF3
- 356 0048 02       		.uleb128 0x2
- 357 0049 02       		.byte	0x2
- 358 004a 05       		.byte	0x5
- 359 004b AF020000 		.4byte	.LASF4
- 360 004f 02       		.uleb128 0x2
- 361 0050 02       		.byte	0x2
- 362 0051 07       		.byte	0x7
- 363 0052 45010000 		.4byte	.LASF5
- 364 0056 04       		.uleb128 0x4
- 365 0057 1D000000 		.4byte	.LASF9
- 366 005b 02       		.byte	0x2
- 367 005c 3F       		.byte	0x3f
- 368 005d 61000000 		.4byte	0x61
- 369 0061 02       		.uleb128 0x2
- 370 0062 04       		.byte	0x4
- 371 0063 05       		.byte	0x5
- 372 0064 D5020000 		.4byte	.LASF6
- 373 0068 02       		.uleb128 0x2
- 374 0069 04       		.byte	0x4
- 375 006a 07       		.byte	0x7
- 376 006b CB010000 		.4byte	.LASF7
- 377 006f 02       		.uleb128 0x2
- 378 0070 08       		.byte	0x8
- 379 0071 05       		.byte	0x5
- 380 0072 90020000 		.4byte	.LASF8
- 381 0076 04       		.uleb128 0x4
- 382 0077 45000000 		.4byte	.LASF10
- 383 007b 03       		.byte	0x3
- 384 007c 2C       		.byte	0x2c
- 385 007d 56000000 		.4byte	0x56
- 386 0081 02       		.uleb128 0x2
- 387 0082 04       		.byte	0x4
- 388 0083 04       		.byte	0x4
- 389 0084 4D000000 		.4byte	.LASF11
- 390 0088 02       		.uleb128 0x2
- 391 0089 08       		.byte	0x8
- 392 008a 04       		.byte	0x4
- 393 008b 32000000 		.4byte	.LASF12
- 394 008f 02       		.uleb128 0x2
- 395 0090 01       		.byte	0x1
- 396 0091 08       		.byte	0x8
- 397 0092 A5020000 		.4byte	.LASF13
- 398 0096 02       		.uleb128 0x2
- 399 0097 08       		.byte	0x8
- 400 0098 04       		.byte	0x4
- 401 0099 DE020000 		.4byte	.LASF14
- 402 009d 02       		.uleb128 0x2
- 403 009e 04       		.byte	0x4
- 404 009f 07       		.byte	0x7
- 405 00a0 81020000 		.4byte	.LASF15
- 406 00a4 05       		.uleb128 0x5
- 407 00a5 65010000 		.4byte	.LASF44
-ARM GAS  C:\Users\dgitau\AppData\Local\Temp\ccsO7j4q.s 			page 10
+ 311              		.loc 1 144 0
+ 312 018c DDE90067 		ldrd	r6, [sp]
+ 313 0190 67E7     		b	.L6
+ 314              	.L12:
+ 315 0192 00BFAFF3 		.align	3
+ 315      0080
+ 316              	.L11:
+ 317 0198 00000040 		.word	1073741824
+ 318 019c 92240940 		.word	1074341010
+ 319 01a0 00000000 		.word	.LANCHOR1
+ 320 01a4 00001440 		.word	1075052544
+ 321 01a8 00000000 		.word	.LC0
+ 322 01ac 00000000 		.word	magnet_inter
+ 323 01b0 10000000 		.word	.LC1
+ 324 01b4 00000000 		.word	.LANCHOR0
+ 325 01b8 67666666 		.word	1717986919
+ 326 01bc 14000000 		.word	.LC2
+ 327 01c0 1C000000 		.word	.LC3
+ 328              		.cfi_endproc
+ 329              	.LFE65:
+ 330              		.size	main, .-main
+ 331              		.global	magnet_flag
+ 332              		.global	desired_speed
+ 333              		.global	clock_frequency
+ 334              		.global	wheel_diam_feet
+ 335              		.global	timer_max
+ 336              		.global	k_d
+ 337              		.global	k_i
+ 338              		.global	k_p
+ 339              		.data
+ 340              		.align	3
+ 341              		.set	.LANCHOR1,. + 0
+ 342              		.type	wheel_diam_feet, %object
+ 343              		.size	wheel_diam_feet, 8
+ 344              	wheel_diam_feet:
+ 345 0000 000000A0 		.word	-1610612736
+ 346 0004 AAAACA3F 		.word	1070246570
+ 347              		.type	timer_max, %object
+ 348              		.size	timer_max, 8
+ 349              	timer_max:
+ 350 0008 00000000 		.word	0
+ 351 000c E0FFEF40 		.word	1089470432
+ 352              		.type	clock_frequency, %object
+ 353              		.size	clock_frequency, 8
+ 354              	clock_frequency:
+ 355 0010 00000000 		.word	0
+ 356 0014 0088B340 		.word	1085507584
+ 357              		.type	desired_speed, %object
+ 358              		.size	desired_speed, 8
+ 359              	desired_speed:
+ 360 0018 00000000 		.word	0
+ 361 001c 00001040 		.word	1074790400
+ 362              		.type	k_p, %object
+ 363              		.size	k_p, 8
+ 364              	k_p:
+ 365 0020 66666666 		.word	1717986918
+ 366 0024 6666D63F 		.word	1071015526
+ARM GAS  C:\Users\dgitau\AppData\Local\Temp\ccBBiuSO.s 			page 10
 
 
- 408 00a9 01       		.byte	0x1
- 409 00aa 1B       		.byte	0x1b
- 410 00ab 00000000 		.4byte	.LFB64
- 411 00af 14000000 		.4byte	.LFE64-.LFB64
- 412 00b3 01       		.uleb128 0x1
- 413 00b4 9C       		.byte	0x9c
- 414 00b5 06       		.uleb128 0x6
- 415 00b6 AA020000 		.4byte	.LASF45
- 416 00ba 01       		.byte	0x1
- 417 00bb 20       		.byte	0x20
- 418 00bc 33000000 		.4byte	0x33
- 419 00c0 00000000 		.4byte	.LFB65
- 420 00c4 78010000 		.4byte	.LFE65-.LFB65
- 421 00c8 01       		.uleb128 0x1
- 422 00c9 9C       		.byte	0x9c
- 423 00ca 30020000 		.4byte	0x230
- 424 00ce 07       		.uleb128 0x7
- 425 00cf 9B010000 		.4byte	.LASF16
- 426 00d3 01       		.byte	0x1
- 427 00d4 22       		.byte	0x22
- 428 00d5 88000000 		.4byte	0x88
- 429 00d9 00000000 		.4byte	.LLST0
- 430 00dd 07       		.uleb128 0x7
- 431 00de 64020000 		.4byte	.LASF17
- 432 00e2 01       		.byte	0x1
- 433 00e3 22       		.byte	0x22
- 434 00e4 88000000 		.4byte	0x88
- 435 00e8 18000000 		.4byte	.LLST1
- 436 00ec 08       		.uleb128 0x8
- 437 00ed 2A010000 		.4byte	.LASF18
- 438 00f1 01       		.byte	0x1
- 439 00f2 22       		.byte	0x22
- 440 00f3 88000000 		.4byte	0x88
- 441 00f7 08       		.byte	0x8
- 442 00f8 00000040 		.4byte	0x40000000
- 443 00fc 9224F93F 		.4byte	0x3ff92492
- 444 0100 07       		.uleb128 0x7
- 445 0101 59020000 		.4byte	.LASF19
- 446 0105 01       		.byte	0x1
- 447 0106 23       		.byte	0x23
- 448 0107 68000000 		.4byte	0x68
- 449 010b 30000000 		.4byte	.LLST2
- 450 010f 07       		.uleb128 0x7
- 451 0110 8A020000 		.4byte	.LASF20
- 452 0114 01       		.byte	0x1
- 453 0115 24       		.byte	0x24
- 454 0116 88000000 		.4byte	0x88
- 455 011a 43000000 		.4byte	.LLST3
- 456 011e 07       		.uleb128 0x7
- 457 011f B7010000 		.4byte	.LASF21
- 458 0123 01       		.byte	0x1
- 459 0124 24       		.byte	0x24
- 460 0125 88000000 		.4byte	0x88
- 461 0129 5B000000 		.4byte	.LLST4
- 462 012d 07       		.uleb128 0x7
- 463 012e 01020000 		.4byte	.LASF22
- 464 0132 01       		.byte	0x1
-ARM GAS  C:\Users\dgitau\AppData\Local\Temp\ccsO7j4q.s 			page 11
+ 367              		.section	.rodata.str1.4,"aMS",%progbits,1
+ 368              		.align	2
+ 369              	.LC0:
+ 370 0000 53706565 		.ascii	"Speed Control\000"
+ 370      6420436F 
+ 370      6E74726F 
+ 370      6C00
+ 371 000e 0000     		.space	2
+ 372              	.LC1:
+ 373 0010 256400   		.ascii	"%d\000"
+ 374 0013 00       		.space	1
+ 375              	.LC2:
+ 376 0014 252E3266 		.ascii	"%.2f\000"
+ 376      00
+ 377 0019 000000   		.space	3
+ 378              	.LC3:
+ 379 001c 536B6970 		.ascii	"Skipped\000"
+ 379      70656400 
+ 380              		.bss
+ 381              		.align	3
+ 382              		.set	.LANCHOR0,. + 0
+ 383              		.type	magnet_flag, %object
+ 384              		.size	magnet_flag, 4
+ 385              	magnet_flag:
+ 386 0000 00000000 		.space	4
+ 387 0004 00000000 		.space	4
+ 388              		.type	k_i, %object
+ 389              		.size	k_i, 8
+ 390              	k_i:
+ 391 0008 00000000 		.space	8
+ 391      00000000 
+ 392              		.type	k_d, %object
+ 393              		.size	k_d, 8
+ 394              	k_d:
+ 395 0010 00000000 		.space	8
+ 395      00000000 
+ 396              		.text
+ 397              	.Letext0:
+ 398              		.file 2 "c:\\program files (x86)\\cypress\\psoc creator\\4.1\\psoc creator\\import\\gnu\\arm\\5.4.
+ 399              		.file 3 "c:\\program files (x86)\\cypress\\psoc creator\\4.1\\psoc creator\\import\\gnu\\arm\\5.4.
+ 400              		.file 4 "Generated_Source\\PSoC5/core_cm3.h"
+ 401              		.file 5 "Generated_Source\\PSoC5/Timer.h"
+ 402              		.file 6 "Generated_Source\\PSoC5/PWM.h"
+ 403              		.file 7 "Generated_Source\\PSoC5/Magnet_Interrupt.h"
+ 404              		.file 8 "Generated_Source\\PSoC5/LCD.h"
+ 405              		.file 9 "c:\\program files (x86)\\cypress\\psoc creator\\4.1\\psoc creator\\import\\gnu\\arm\\5.4.
+ 406              		.section	.debug_info,"",%progbits
+ 407              	.Ldebug_info0:
+ 408 0000 E4030000 		.4byte	0x3e4
+ 409 0004 0400     		.2byte	0x4
+ 410 0006 00000000 		.4byte	.Ldebug_abbrev0
+ 411 000a 04       		.byte	0x4
+ 412 000b 01       		.uleb128 0x1
+ 413 000c A3000000 		.4byte	.LASF43
+ 414 0010 0C       		.byte	0xc
+ 415 0011 A7020000 		.4byte	.LASF44
+ 416 0015 2E020000 		.4byte	.LASF45
+ARM GAS  C:\Users\dgitau\AppData\Local\Temp\ccBBiuSO.s 			page 11
 
 
- 465 0133 24       		.byte	0x24
- 466 0134 88000000 		.4byte	0x88
- 467 0138 7F000000 		.4byte	.LLST5
- 468 013c 07       		.uleb128 0x7
- 469 013d 1F010000 		.4byte	.LASF23
- 470 0141 01       		.byte	0x1
- 471 0142 24       		.byte	0x24
- 472 0143 88000000 		.4byte	0x88
- 473 0147 97000000 		.4byte	.LLST6
- 474 014b 07       		.uleb128 0x7
- 475 014c 0F000000 		.4byte	.LASF24
- 476 0150 01       		.byte	0x1
- 477 0151 25       		.byte	0x25
- 478 0152 33000000 		.4byte	0x33
- 479 0156 E3000000 		.4byte	.LLST7
- 480 015a 07       		.uleb128 0x7
- 481 015b 00000000 		.4byte	.LASF25
- 482 015f 01       		.byte	0x1
- 483 0160 25       		.byte	0x25
- 484 0161 33000000 		.4byte	0x33
- 485 0165 F6000000 		.4byte	.LLST8
- 486 0169 09       		.uleb128 0x9
- 487 016a 27000000 		.4byte	.LASF26
- 488 016e 01       		.byte	0x1
- 489 016f 26       		.byte	0x26
- 490 0170 30020000 		.4byte	0x230
- 491 0174 02       		.uleb128 0x2
- 492 0175 91       		.byte	0x91
- 493 0176 48       		.sleb128 -56
- 494 0177 0A       		.uleb128 0xa
- 495 0178 0C000000 		.4byte	.LVL0
- 496 017c FD020000 		.4byte	0x2fd
- 497 0180 0A       		.uleb128 0xa
- 498 0181 10000000 		.4byte	.LVL1
- 499 0185 08030000 		.4byte	0x308
- 500 0189 0A       		.uleb128 0xa
- 501 018a 14000000 		.4byte	.LVL2
- 502 018e 13030000 		.4byte	0x313
- 503 0192 0B       		.uleb128 0xb
- 504 0193 1A000000 		.4byte	.LVL3
- 505 0197 1E030000 		.4byte	0x31e
- 506 019b A9010000 		.4byte	0x1a9
- 507 019f 0C       		.uleb128 0xc
- 508 01a0 01       		.uleb128 0x1
- 509 01a1 50       		.byte	0x50
- 510 01a2 05       		.uleb128 0x5
- 511 01a3 03       		.byte	0x3
- 512 01a4 00000000 		.4byte	magnet_inter
- 513 01a8 00       		.byte	0
- 514 01a9 0B       		.uleb128 0xb
- 515 01aa 22000000 		.4byte	.LVL4
- 516 01ae 29030000 		.4byte	0x329
- 517 01b2 C1010000 		.4byte	0x1c1
- 518 01b6 0C       		.uleb128 0xc
- 519 01b7 01       		.uleb128 0x1
- 520 01b8 50       		.byte	0x50
- 521 01b9 01       		.uleb128 0x1
-ARM GAS  C:\Users\dgitau\AppData\Local\Temp\ccsO7j4q.s 			page 12
+ 417 0019 00000000 		.4byte	.Ldebug_ranges0+0
+ 418 001d 00000000 		.4byte	0
+ 419 0021 00000000 		.4byte	.Ldebug_line0
+ 420 0025 02       		.uleb128 0x2
+ 421 0026 08       		.byte	0x8
+ 422 0027 04       		.byte	0x4
+ 423 0028 11030000 		.4byte	.LASF0
+ 424 002c 02       		.uleb128 0x2
+ 425 002d 01       		.byte	0x1
+ 426 002e 06       		.byte	0x6
+ 427 002f 89000000 		.4byte	.LASF1
+ 428 0033 02       		.uleb128 0x2
+ 429 0034 01       		.byte	0x1
+ 430 0035 08       		.byte	0x8
+ 431 0036 95000000 		.4byte	.LASF2
+ 432 003a 02       		.uleb128 0x2
+ 433 003b 02       		.byte	0x2
+ 434 003c 05       		.byte	0x5
+ 435 003d B8020000 		.4byte	.LASF3
+ 436 0041 02       		.uleb128 0x2
+ 437 0042 02       		.byte	0x2
+ 438 0043 07       		.byte	0x7
+ 439 0044 30000000 		.4byte	.LASF4
+ 440 0048 03       		.uleb128 0x3
+ 441 0049 0D000000 		.4byte	.LASF10
+ 442 004d 02       		.byte	0x2
+ 443 004e 3F       		.byte	0x3f
+ 444 004f 53000000 		.4byte	0x53
+ 445 0053 02       		.uleb128 0x2
+ 446 0054 04       		.byte	0x4
+ 447 0055 05       		.byte	0x5
+ 448 0056 EE020000 		.4byte	.LASF5
+ 449 005a 02       		.uleb128 0x2
+ 450 005b 04       		.byte	0x4
+ 451 005c 07       		.byte	0x7
+ 452 005d 9B010000 		.4byte	.LASF6
+ 453 0061 02       		.uleb128 0x2
+ 454 0062 08       		.byte	0x8
+ 455 0063 05       		.byte	0x5
+ 456 0064 99020000 		.4byte	.LASF7
+ 457 0068 02       		.uleb128 0x2
+ 458 0069 08       		.byte	0x8
+ 459 006a 07       		.byte	0x7
+ 460 006b 0A020000 		.4byte	.LASF8
+ 461 006f 04       		.uleb128 0x4
+ 462 0070 04       		.byte	0x4
+ 463 0071 05       		.byte	0x5
+ 464 0072 696E7400 		.ascii	"int\000"
+ 465 0076 02       		.uleb128 0x2
+ 466 0077 04       		.byte	0x4
+ 467 0078 07       		.byte	0x7
+ 468 0079 FD010000 		.4byte	.LASF9
+ 469 007d 03       		.uleb128 0x3
+ 470 007e 82020000 		.4byte	.LASF11
+ 471 0082 03       		.byte	0x3
+ 472 0083 2C       		.byte	0x2c
+ 473 0084 48000000 		.4byte	0x48
+ARM GAS  C:\Users\dgitau\AppData\Local\Temp\ccBBiuSO.s 			page 12
 
 
- 522 01ba 30       		.byte	0x30
- 523 01bb 0C       		.uleb128 0xc
- 524 01bc 01       		.uleb128 0x1
- 525 01bd 51       		.byte	0x51
- 526 01be 01       		.uleb128 0x1
- 527 01bf 30       		.byte	0x30
- 528 01c0 00       		.byte	0
- 529 01c1 0B       		.uleb128 0xb
- 530 01c2 28000000 		.4byte	.LVL5
- 531 01c6 34030000 		.4byte	0x334
- 532 01ca D8010000 		.4byte	0x1d8
- 533 01ce 0C       		.uleb128 0xc
- 534 01cf 01       		.uleb128 0x1
- 535 01d0 50       		.byte	0x50
- 536 01d1 05       		.uleb128 0x5
- 537 01d2 03       		.byte	0x3
- 538 01d3 00000000 		.4byte	.LC0
- 539 01d7 00       		.byte	0
- 540 01d8 0A       		.uleb128 0xa
- 541 01d9 52000000 		.4byte	.LVL8
- 542 01dd 3F030000 		.4byte	0x33f
- 543 01e1 0A       		.uleb128 0xa
- 544 01e2 2C010000 		.4byte	.LVL33
- 545 01e6 4A030000 		.4byte	0x34a
- 546 01ea 0B       		.uleb128 0xb
- 547 01eb 38010000 		.4byte	.LVL34
- 548 01ef 55030000 		.4byte	0x355
- 549 01f3 07020000 		.4byte	0x207
- 550 01f7 0C       		.uleb128 0xc
- 551 01f8 01       		.uleb128 0x1
- 552 01f9 50       		.byte	0x50
- 553 01fa 02       		.uleb128 0x2
- 554 01fb 91       		.byte	0x91
- 555 01fc 48       		.sleb128 -56
- 556 01fd 0C       		.uleb128 0xc
- 557 01fe 01       		.uleb128 0x1
- 558 01ff 51       		.byte	0x51
- 559 0200 05       		.uleb128 0x5
- 560 0201 03       		.byte	0x3
- 561 0202 10000000 		.4byte	.LC1
- 562 0206 00       		.byte	0
- 563 0207 0B       		.uleb128 0xb
- 564 0208 40010000 		.4byte	.LVL35
- 565 020c 29030000 		.4byte	0x329
- 566 0210 1F020000 		.4byte	0x21f
- 567 0214 0C       		.uleb128 0xc
- 568 0215 01       		.uleb128 0x1
- 569 0216 50       		.byte	0x50
- 570 0217 01       		.uleb128 0x1
- 571 0218 30       		.byte	0x30
- 572 0219 0C       		.uleb128 0xc
- 573 021a 01       		.uleb128 0x1
- 574 021b 51       		.byte	0x51
- 575 021c 01       		.uleb128 0x1
- 576 021d 30       		.byte	0x30
- 577 021e 00       		.byte	0
- 578 021f 0D       		.uleb128 0xd
-ARM GAS  C:\Users\dgitau\AppData\Local\Temp\ccsO7j4q.s 			page 13
+ 474 0088 02       		.uleb128 0x2
+ 475 0089 04       		.byte	0x4
+ 476 008a 04       		.byte	0x4
+ 477 008b 79000000 		.4byte	.LASF12
+ 478 008f 02       		.uleb128 0x2
+ 479 0090 01       		.byte	0x1
+ 480 0091 08       		.byte	0x8
+ 481 0092 AE020000 		.4byte	.LASF13
+ 482 0096 02       		.uleb128 0x2
+ 483 0097 08       		.byte	0x8
+ 484 0098 04       		.byte	0x4
+ 485 0099 F7020000 		.4byte	.LASF14
+ 486 009d 02       		.uleb128 0x2
+ 487 009e 04       		.byte	0x4
+ 488 009f 07       		.byte	0x7
+ 489 00a0 8A020000 		.4byte	.LASF15
+ 490 00a4 05       		.uleb128 0x5
+ 491 00a5 8E010000 		.4byte	.LASF46
+ 492 00a9 01       		.byte	0x1
+ 493 00aa 3B       		.byte	0x3b
+ 494 00ab 00000000 		.4byte	.LFB64
+ 495 00af 14000000 		.4byte	.LFE64-.LFB64
+ 496 00b3 01       		.uleb128 0x1
+ 497 00b4 9C       		.byte	0x9c
+ 498 00b5 CE000000 		.4byte	0xce
+ 499 00b9 06       		.uleb128 0x6
+ 500 00ba 18030000 		.4byte	.LASF22
+ 501 00be 01       		.byte	0x1
+ 502 00bf 3C       		.byte	0x3c
+ 503 00c0 CE000000 		.4byte	0xce
+ 504 00c4 07       		.uleb128 0x7
+ 505 00c5 0C000000 		.4byte	.LVL0
+ 506 00c9 6E030000 		.4byte	0x36e
+ 507 00cd 00       		.byte	0
+ 508 00ce 08       		.uleb128 0x8
+ 509 00cf 8F000000 		.4byte	0x8f
+ 510 00d3 DE000000 		.4byte	0xde
+ 511 00d7 09       		.uleb128 0x9
+ 512 00d8 9D000000 		.4byte	0x9d
+ 513 00dc 0F       		.byte	0xf
+ 514 00dd 00       		.byte	0
+ 515 00de 0A       		.uleb128 0xa
+ 516 00df B3020000 		.4byte	.LASF47
+ 517 00e3 01       		.byte	0x1
+ 518 00e4 45       		.byte	0x45
+ 519 00e5 6F000000 		.4byte	0x6f
+ 520 00e9 00000000 		.4byte	.LFB65
+ 521 00ed C4010000 		.4byte	.LFE65-.LFB65
+ 522 00f1 01       		.uleb128 0x1
+ 523 00f2 9C       		.byte	0x9c
+ 524 00f3 D5020000 		.4byte	0x2d5
+ 525 00f7 0B       		.uleb128 0xb
+ 526 00f8 43000000 		.4byte	.LASF16
+ 527 00fc 01       		.byte	0x1
+ 528 00fd 48       		.byte	0x48
+ 529 00fe 25000000 		.4byte	0x25
+ 530 0102 00000000 		.4byte	.LLST0
+ARM GAS  C:\Users\dgitau\AppData\Local\Temp\ccBBiuSO.s 			page 13
 
 
- 579 0220 46010000 		.4byte	.LVL36
- 580 0224 34030000 		.4byte	0x334
- 581 0228 0C       		.uleb128 0xc
- 582 0229 01       		.uleb128 0x1
- 583 022a 50       		.byte	0x50
- 584 022b 02       		.uleb128 0x2
- 585 022c 91       		.byte	0x91
- 586 022d 48       		.sleb128 -56
- 587 022e 00       		.byte	0
- 588 022f 00       		.byte	0
- 589 0230 0E       		.uleb128 0xe
- 590 0231 8F000000 		.4byte	0x8f
- 591 0235 40020000 		.4byte	0x240
- 592 0239 0F       		.uleb128 0xf
- 593 023a 9D000000 		.4byte	0x9d
- 594 023e 0F       		.byte	0xf
- 595 023f 00       		.byte	0
- 596 0240 10       		.uleb128 0x10
- 597 0241 6B5F7000 		.ascii	"k_p\000"
- 598 0245 01       		.byte	0x1
- 599 0246 0D       		.byte	0xd
- 600 0247 54020000 		.4byte	0x254
- 601 024b 08       		.byte	0x8
- 602 024c 00000000 		.4byte	0
- 603 0250 00000000 		.4byte	0
- 604 0254 11       		.uleb128 0x11
- 605 0255 88000000 		.4byte	0x88
- 606 0259 10       		.uleb128 0x10
- 607 025a 6B5F6900 		.ascii	"k_i\000"
- 608 025e 01       		.byte	0x1
- 609 025f 0E       		.byte	0xe
- 610 0260 54020000 		.4byte	0x254
- 611 0264 08       		.byte	0x8
- 612 0265 00000000 		.4byte	0
- 613 0269 00000000 		.4byte	0
- 614 026d 10       		.uleb128 0x10
- 615 026e 6B5F6400 		.ascii	"k_d\000"
- 616 0272 01       		.byte	0x1
- 617 0273 0F       		.byte	0xf
- 618 0274 54020000 		.4byte	0x254
- 619 0278 08       		.byte	0x8
- 620 0279 00000000 		.4byte	0
- 621 027d 00000000 		.4byte	0
- 622 0281 08       		.uleb128 0x8
- 623 0282 FB000000 		.4byte	.LASF27
- 624 0286 01       		.byte	0x1
- 625 0287 11       		.byte	0x11
- 626 0288 54020000 		.4byte	0x254
- 627 028c 08       		.byte	0x8
- 628 028d 00000000 		.4byte	0
- 629 0291 00000440 		.4byte	0x40040000
- 630 0295 08       		.uleb128 0x8
- 631 0296 EA020000 		.4byte	.LASF28
- 632 029a 01       		.byte	0x1
- 633 029b 13       		.byte	0x13
- 634 029c 54020000 		.4byte	0x254
- 635 02a0 08       		.byte	0x8
-ARM GAS  C:\Users\dgitau\AppData\Local\Temp\ccsO7j4q.s 			page 14
+ 531 0106 0B       		.uleb128 0xb
+ 532 0107 75020000 		.4byte	.LASF17
+ 533 010b 01       		.byte	0x1
+ 534 010c 49       		.byte	0x49
+ 535 010d 25000000 		.4byte	0x25
+ 536 0111 39000000 		.4byte	.LLST1
+ 537 0115 0B       		.uleb128 0xb
+ 538 0116 31010000 		.4byte	.LASF18
+ 539 011a 01       		.byte	0x1
+ 540 011b 4A       		.byte	0x4a
+ 541 011c 25000000 		.4byte	0x25
+ 542 0120 65000000 		.4byte	.LLST2
+ 543 0124 0B       		.uleb128 0xb
+ 544 0125 63010000 		.4byte	.LASF19
+ 545 0129 01       		.byte	0x1
+ 546 012a 4B       		.byte	0x4b
+ 547 012b 25000000 		.4byte	0x25
+ 548 012f 89000000 		.4byte	.LLST3
+ 549 0133 0B       		.uleb128 0xb
+ 550 0134 00000000 		.4byte	.LASF20
+ 551 0138 01       		.byte	0x1
+ 552 0139 4C       		.byte	0x4c
+ 553 013a 25000000 		.4byte	0x25
+ 554 013e BD000000 		.4byte	.LLST4
+ 555 0142 0B       		.uleb128 0xb
+ 556 0143 6A020000 		.4byte	.LASF21
+ 557 0147 01       		.byte	0x1
+ 558 0148 4D       		.byte	0x4d
+ 559 0149 25000000 		.4byte	0x25
+ 560 014d 17010000 		.4byte	.LLST5
+ 561 0151 0C       		.uleb128 0xc
+ 562 0152 18030000 		.4byte	.LASF22
+ 563 0156 01       		.byte	0x1
+ 564 0157 4E       		.byte	0x4e
+ 565 0158 CE000000 		.4byte	0xce
+ 566 015c 02       		.uleb128 0x2
+ 567 015d 91       		.byte	0x91
+ 568 015e 48       		.sleb128 -56
+ 569 015f 0B       		.uleb128 0xb
+ 570 0160 65000000 		.4byte	.LASF23
+ 571 0164 01       		.byte	0x1
+ 572 0165 4F       		.byte	0x4f
+ 573 0166 6F000000 		.4byte	0x6f
+ 574 016a 49010000 		.4byte	.LLST6
+ 575 016e 0B       		.uleb128 0xb
+ 576 016f 93020000 		.4byte	.LASF24
+ 577 0173 01       		.byte	0x1
+ 578 0174 51       		.byte	0x51
+ 579 0175 25000000 		.4byte	0x25
+ 580 0179 68010000 		.4byte	.LLST7
+ 581 017d 0B       		.uleb128 0xb
+ 582 017e E9010000 		.4byte	.LASF25
+ 583 0182 01       		.byte	0x1
+ 584 0183 52       		.byte	0x52
+ 585 0184 25000000 		.4byte	0x25
+ 586 0188 9F010000 		.4byte	.LLST8
+ 587 018c 07       		.uleb128 0x7
+ARM GAS  C:\Users\dgitau\AppData\Local\Temp\ccBBiuSO.s 			page 14
 
 
- 636 02a1 00000000 		.4byte	0
- 637 02a5 00001040 		.4byte	0x40100000
- 638 02a9 09       		.uleb128 0x9
- 639 02aa 39000000 		.4byte	.LASF29
- 640 02ae 01       		.byte	0x1
- 641 02af 15       		.byte	0x15
- 642 02b0 33000000 		.4byte	0x33
- 643 02b4 05       		.uleb128 0x5
- 644 02b5 03       		.byte	0x3
- 645 02b6 00000000 		.4byte	magnet_flag
- 646 02ba 09       		.uleb128 0x9
- 647 02bb 71020000 		.4byte	.LASF30
- 648 02bf 01       		.byte	0x1
- 649 02c0 17       		.byte	0x17
- 650 02c1 33000000 		.4byte	0x33
- 651 02c5 05       		.uleb128 0x5
- 652 02c6 03       		.byte	0x3
- 653 02c7 04000000 		.4byte	index_of_magnet
- 654 02cb 0E       		.uleb128 0xe
- 655 02cc 88000000 		.4byte	0x88
- 656 02d0 DB020000 		.4byte	0x2db
- 657 02d4 0F       		.uleb128 0xf
- 658 02d5 9D000000 		.4byte	0x9d
- 659 02d9 04       		.byte	0x4
- 660 02da 00       		.byte	0
- 661 02db 09       		.uleb128 0x9
- 662 02dc 0D010000 		.4byte	.LASF31
- 663 02e0 01       		.byte	0x1
- 664 02e1 18       		.byte	0x18
- 665 02e2 CB020000 		.4byte	0x2cb
- 666 02e6 05       		.uleb128 0x5
- 667 02e7 03       		.byte	0x3
- 668 02e8 08000000 		.4byte	magnet_view_times
- 669 02ec 12       		.uleb128 0x12
- 670 02ed 58010000 		.4byte	.LASF46
- 671 02f1 09       		.byte	0x9
- 672 02f2 1207     		.2byte	0x712
- 673 02f4 F8020000 		.4byte	0x2f8
- 674 02f8 13       		.uleb128 0x13
- 675 02f9 76000000 		.4byte	0x76
- 676 02fd 14       		.uleb128 0x14
- 677 02fe B9020000 		.4byte	.LASF32
- 678 0302 B9020000 		.4byte	.LASF32
- 679 0306 04       		.byte	0x4
- 680 0307 92       		.byte	0x92
- 681 0308 14       		.uleb128 0x14
- 682 0309 BF010000 		.4byte	.LASF33
- 683 030d BF010000 		.4byte	.LASF33
- 684 0311 05       		.byte	0x5
- 685 0312 5A       		.byte	0x5a
- 686 0313 14       		.uleb128 0x14
- 687 0314 72010000 		.4byte	.LASF34
- 688 0318 72010000 		.4byte	.LASF34
- 689 031c 06       		.byte	0x6
- 690 031d 17       		.byte	0x17
- 691 031e 14       		.uleb128 0x14
- 692 031f F8020000 		.4byte	.LASF35
-ARM GAS  C:\Users\dgitau\AppData\Local\Temp\ccsO7j4q.s 			page 15
+ 588 018d 2C000000 		.4byte	.LVL6
+ 589 0191 79030000 		.4byte	0x379
+ 590 0195 07       		.uleb128 0x7
+ 591 0196 30000000 		.4byte	.LVL7
+ 592 019a 84030000 		.4byte	0x384
+ 593 019e 07       		.uleb128 0x7
+ 594 019f 34000000 		.4byte	.LVL8
+ 595 01a3 8F030000 		.4byte	0x38f
+ 596 01a7 07       		.uleb128 0x7
+ 597 01a8 38000000 		.4byte	.LVL9
+ 598 01ac 9A030000 		.4byte	0x39a
+ 599 01b0 0D       		.uleb128 0xd
+ 600 01b1 4A000000 		.4byte	.LVL10
+ 601 01b5 A5030000 		.4byte	0x3a5
+ 602 01b9 C8010000 		.4byte	0x1c8
+ 603 01bd 0E       		.uleb128 0xe
+ 604 01be 01       		.uleb128 0x1
+ 605 01bf 50       		.byte	0x50
+ 606 01c0 01       		.uleb128 0x1
+ 607 01c1 30       		.byte	0x30
+ 608 01c2 0E       		.uleb128 0xe
+ 609 01c3 01       		.uleb128 0x1
+ 610 01c4 51       		.byte	0x51
+ 611 01c5 01       		.uleb128 0x1
+ 612 01c6 30       		.byte	0x30
+ 613 01c7 00       		.byte	0
+ 614 01c8 0D       		.uleb128 0xd
+ 615 01c9 50000000 		.4byte	.LVL11
+ 616 01cd B0030000 		.4byte	0x3b0
+ 617 01d1 DC010000 		.4byte	0x1dc
+ 618 01d5 0E       		.uleb128 0xe
+ 619 01d6 01       		.uleb128 0x1
+ 620 01d7 50       		.byte	0x50
+ 621 01d8 02       		.uleb128 0x2
+ 622 01d9 74       		.byte	0x74
+ 623 01da 74       		.sleb128 -12
+ 624 01db 00       		.byte	0
+ 625 01dc 0D       		.uleb128 0xd
+ 626 01dd 56000000 		.4byte	.LVL12
+ 627 01e1 BB030000 		.4byte	0x3bb
+ 628 01e5 F3010000 		.4byte	0x1f3
+ 629 01e9 0E       		.uleb128 0xe
+ 630 01ea 01       		.uleb128 0x1
+ 631 01eb 50       		.byte	0x50
+ 632 01ec 05       		.uleb128 0x5
+ 633 01ed 03       		.byte	0x3
+ 634 01ee 00000000 		.4byte	magnet_inter
+ 635 01f2 00       		.byte	0
+ 636 01f3 0D       		.uleb128 0xd
+ 637 01f4 6C000000 		.4byte	.LVL14
+ 638 01f8 C6030000 		.4byte	0x3c6
+ 639 01fc 16020000 		.4byte	0x216
+ 640 0200 0E       		.uleb128 0xe
+ 641 0201 01       		.uleb128 0x1
+ 642 0202 50       		.byte	0x50
+ 643 0203 02       		.uleb128 0x2
+ 644 0204 91       		.byte	0x91
+ARM GAS  C:\Users\dgitau\AppData\Local\Temp\ccBBiuSO.s 			page 15
 
 
- 693 0323 F8020000 		.4byte	.LASF35
- 694 0327 06       		.byte	0x6
- 695 0328 1D       		.byte	0x1d
- 696 0329 14       		.uleb128 0x14
- 697 032a 10020000 		.4byte	.LASF36
- 698 032e 10020000 		.4byte	.LASF36
- 699 0332 07       		.byte	0x7
- 700 0333 3D       		.byte	0x3d
- 701 0334 14       		.uleb128 0x14
- 702 0335 A7010000 		.4byte	.LASF37
- 703 0339 A7010000 		.4byte	.LASF37
- 704 033d 07       		.byte	0x7
- 705 033e 3C       		.byte	0x3c
- 706 033f 14       		.uleb128 0x14
- 707 0340 C3020000 		.4byte	.LASF38
- 708 0344 C3020000 		.4byte	.LASF38
- 709 0348 05       		.byte	0x5
- 710 0349 6B       		.byte	0x6b
- 711 034a 14       		.uleb128 0x14
- 712 034b 8A010000 		.4byte	.LASF39
- 713 034f 8A010000 		.4byte	.LASF39
- 714 0353 04       		.byte	0x4
- 715 0354 C3       		.byte	0xc3
- 716 0355 14       		.uleb128 0x14
- 717 0356 14030000 		.4byte	.LASF40
- 718 035a 14030000 		.4byte	.LASF40
- 719 035e 08       		.byte	0x8
- 720 035f E7       		.byte	0xe7
- 721 0360 00       		.byte	0
- 722              		.section	.debug_abbrev,"",%progbits
- 723              	.Ldebug_abbrev0:
- 724 0000 01       		.uleb128 0x1
- 725 0001 11       		.uleb128 0x11
- 726 0002 01       		.byte	0x1
- 727 0003 25       		.uleb128 0x25
- 728 0004 0E       		.uleb128 0xe
- 729 0005 13       		.uleb128 0x13
- 730 0006 0B       		.uleb128 0xb
- 731 0007 03       		.uleb128 0x3
- 732 0008 0E       		.uleb128 0xe
- 733 0009 1B       		.uleb128 0x1b
- 734 000a 0E       		.uleb128 0xe
- 735 000b 55       		.uleb128 0x55
- 736 000c 17       		.uleb128 0x17
- 737 000d 11       		.uleb128 0x11
- 738 000e 01       		.uleb128 0x1
- 739 000f 10       		.uleb128 0x10
- 740 0010 17       		.uleb128 0x17
- 741 0011 00       		.byte	0
- 742 0012 00       		.byte	0
- 743 0013 02       		.uleb128 0x2
- 744 0014 24       		.uleb128 0x24
- 745 0015 00       		.byte	0
- 746 0016 0B       		.uleb128 0xb
- 747 0017 0B       		.uleb128 0xb
- 748 0018 3E       		.uleb128 0x3e
- 749 0019 0B       		.uleb128 0xb
-ARM GAS  C:\Users\dgitau\AppData\Local\Temp\ccsO7j4q.s 			page 16
+ 645 0205 48       		.sleb128 -56
+ 646 0206 0E       		.uleb128 0xe
+ 647 0207 01       		.uleb128 0x1
+ 648 0208 51       		.byte	0x51
+ 649 0209 05       		.uleb128 0x5
+ 650 020a 03       		.byte	0x3
+ 651 020b 10000000 		.4byte	.LC1
+ 652 020f 0E       		.uleb128 0xe
+ 653 0210 01       		.uleb128 0x1
+ 654 0211 52       		.byte	0x52
+ 655 0212 02       		.uleb128 0x2
+ 656 0213 7B       		.byte	0x7b
+ 657 0214 00       		.sleb128 0
+ 658 0215 00       		.byte	0
+ 659 0216 0D       		.uleb128 0xd
+ 660 0217 74000000 		.4byte	.LVL15
+ 661 021b A5030000 		.4byte	0x3a5
+ 662 021f 2E020000 		.4byte	0x22e
+ 663 0223 0E       		.uleb128 0xe
+ 664 0224 01       		.uleb128 0x1
+ 665 0225 50       		.byte	0x50
+ 666 0226 01       		.uleb128 0x1
+ 667 0227 30       		.byte	0x30
+ 668 0228 0E       		.uleb128 0xe
+ 669 0229 01       		.uleb128 0x1
+ 670 022a 51       		.byte	0x51
+ 671 022b 01       		.uleb128 0x1
+ 672 022c 30       		.byte	0x30
+ 673 022d 00       		.byte	0
+ 674 022e 0D       		.uleb128 0xd
+ 675 022f 7A000000 		.4byte	.LVL16
+ 676 0233 B0030000 		.4byte	0x3b0
+ 677 0237 42020000 		.4byte	0x242
+ 678 023b 0E       		.uleb128 0xe
+ 679 023c 01       		.uleb128 0x1
+ 680 023d 50       		.byte	0x50
+ 681 023e 02       		.uleb128 0x2
+ 682 023f 91       		.byte	0x91
+ 683 0240 48       		.sleb128 -56
+ 684 0241 00       		.byte	0
+ 685 0242 07       		.uleb128 0x7
+ 686 0243 8A000000 		.4byte	.LVL18
+ 687 0247 D1030000 		.4byte	0x3d1
+ 688 024b 07       		.uleb128 0x7
+ 689 024c 38010000 		.4byte	.LVL40
+ 690 0250 DC030000 		.4byte	0x3dc
+ 691 0254 0D       		.uleb128 0xd
+ 692 0255 5C010000 		.4byte	.LVL41
+ 693 0259 C6030000 		.4byte	0x3c6
+ 694 025d 80020000 		.4byte	0x280
+ 695 0261 0E       		.uleb128 0xe
+ 696 0262 01       		.uleb128 0x1
+ 697 0263 50       		.byte	0x50
+ 698 0264 02       		.uleb128 0x2
+ 699 0265 91       		.byte	0x91
+ 700 0266 48       		.sleb128 -56
+ 701 0267 0E       		.uleb128 0xe
+ARM GAS  C:\Users\dgitau\AppData\Local\Temp\ccBBiuSO.s 			page 16
 
 
- 750 001a 03       		.uleb128 0x3
- 751 001b 0E       		.uleb128 0xe
- 752 001c 00       		.byte	0
- 753 001d 00       		.byte	0
- 754 001e 03       		.uleb128 0x3
- 755 001f 24       		.uleb128 0x24
- 756 0020 00       		.byte	0
- 757 0021 0B       		.uleb128 0xb
- 758 0022 0B       		.uleb128 0xb
- 759 0023 3E       		.uleb128 0x3e
- 760 0024 0B       		.uleb128 0xb
- 761 0025 03       		.uleb128 0x3
- 762 0026 08       		.uleb128 0x8
- 763 0027 00       		.byte	0
- 764 0028 00       		.byte	0
- 765 0029 04       		.uleb128 0x4
- 766 002a 16       		.uleb128 0x16
- 767 002b 00       		.byte	0
- 768 002c 03       		.uleb128 0x3
- 769 002d 0E       		.uleb128 0xe
- 770 002e 3A       		.uleb128 0x3a
- 771 002f 0B       		.uleb128 0xb
- 772 0030 3B       		.uleb128 0x3b
- 773 0031 0B       		.uleb128 0xb
- 774 0032 49       		.uleb128 0x49
- 775 0033 13       		.uleb128 0x13
- 776 0034 00       		.byte	0
- 777 0035 00       		.byte	0
- 778 0036 05       		.uleb128 0x5
- 779 0037 2E       		.uleb128 0x2e
- 780 0038 00       		.byte	0
- 781 0039 3F       		.uleb128 0x3f
- 782 003a 19       		.uleb128 0x19
- 783 003b 03       		.uleb128 0x3
- 784 003c 0E       		.uleb128 0xe
- 785 003d 3A       		.uleb128 0x3a
- 786 003e 0B       		.uleb128 0xb
- 787 003f 3B       		.uleb128 0x3b
- 788 0040 0B       		.uleb128 0xb
- 789 0041 27       		.uleb128 0x27
- 790 0042 19       		.uleb128 0x19
- 791 0043 11       		.uleb128 0x11
- 792 0044 01       		.uleb128 0x1
- 793 0045 12       		.uleb128 0x12
- 794 0046 06       		.uleb128 0x6
- 795 0047 40       		.uleb128 0x40
- 796 0048 18       		.uleb128 0x18
- 797 0049 9742     		.uleb128 0x2117
- 798 004b 19       		.uleb128 0x19
- 799 004c 00       		.byte	0
- 800 004d 00       		.byte	0
- 801 004e 06       		.uleb128 0x6
- 802 004f 2E       		.uleb128 0x2e
- 803 0050 01       		.byte	0x1
- 804 0051 3F       		.uleb128 0x3f
- 805 0052 19       		.uleb128 0x19
- 806 0053 03       		.uleb128 0x3
-ARM GAS  C:\Users\dgitau\AppData\Local\Temp\ccsO7j4q.s 			page 17
+ 702 0268 01       		.uleb128 0x1
+ 703 0269 51       		.byte	0x51
+ 704 026a 05       		.uleb128 0x5
+ 705 026b 03       		.byte	0x3
+ 706 026c 14000000 		.4byte	.LC2
+ 707 0270 0E       		.uleb128 0xe
+ 708 0271 06       		.uleb128 0x6
+ 709 0272 52       		.byte	0x52
+ 710 0273 93       		.byte	0x93
+ 711 0274 04       		.uleb128 0x4
+ 712 0275 53       		.byte	0x53
+ 713 0276 93       		.byte	0x93
+ 714 0277 04       		.uleb128 0x4
+ 715 0278 06       		.uleb128 0x6
+ 716 0279 91       		.byte	0x91
+ 717 027a B87F     		.sleb128 -72
+ 718 027c F6       		.byte	0xf6
+ 719 027d 08       		.byte	0x8
+ 720 027e 25       		.uleb128 0x25
+ 721 027f 00       		.byte	0
+ 722 0280 0D       		.uleb128 0xd
+ 723 0281 64010000 		.4byte	.LVL42
+ 724 0285 A5030000 		.4byte	0x3a5
+ 725 0289 98020000 		.4byte	0x298
+ 726 028d 0E       		.uleb128 0xe
+ 727 028e 01       		.uleb128 0x1
+ 728 028f 50       		.byte	0x50
+ 729 0290 01       		.uleb128 0x1
+ 730 0291 30       		.byte	0x30
+ 731 0292 0E       		.uleb128 0xe
+ 732 0293 01       		.uleb128 0x1
+ 733 0294 51       		.byte	0x51
+ 734 0295 01       		.uleb128 0x1
+ 735 0296 30       		.byte	0x30
+ 736 0297 00       		.byte	0
+ 737 0298 0D       		.uleb128 0xd
+ 738 0299 6A010000 		.4byte	.LVL43
+ 739 029d B0030000 		.4byte	0x3b0
+ 740 02a1 AC020000 		.4byte	0x2ac
+ 741 02a5 0E       		.uleb128 0xe
+ 742 02a6 01       		.uleb128 0x1
+ 743 02a7 50       		.byte	0x50
+ 744 02a8 02       		.uleb128 0x2
+ 745 02a9 91       		.byte	0x91
+ 746 02aa 48       		.sleb128 -56
+ 747 02ab 00       		.byte	0
+ 748 02ac 0D       		.uleb128 0xd
+ 749 02ad 80010000 		.4byte	.LVL46
+ 750 02b1 A5030000 		.4byte	0x3a5
+ 751 02b5 C4020000 		.4byte	0x2c4
+ 752 02b9 0E       		.uleb128 0xe
+ 753 02ba 01       		.uleb128 0x1
+ 754 02bb 50       		.byte	0x50
+ 755 02bc 01       		.uleb128 0x1
+ 756 02bd 30       		.byte	0x30
+ 757 02be 0E       		.uleb128 0xe
+ 758 02bf 01       		.uleb128 0x1
+ARM GAS  C:\Users\dgitau\AppData\Local\Temp\ccBBiuSO.s 			page 17
 
 
- 807 0054 0E       		.uleb128 0xe
- 808 0055 3A       		.uleb128 0x3a
- 809 0056 0B       		.uleb128 0xb
- 810 0057 3B       		.uleb128 0x3b
- 811 0058 0B       		.uleb128 0xb
- 812 0059 27       		.uleb128 0x27
- 813 005a 19       		.uleb128 0x19
- 814 005b 49       		.uleb128 0x49
- 815 005c 13       		.uleb128 0x13
- 816 005d 8701     		.uleb128 0x87
- 817 005f 19       		.uleb128 0x19
- 818 0060 11       		.uleb128 0x11
- 819 0061 01       		.uleb128 0x1
- 820 0062 12       		.uleb128 0x12
- 821 0063 06       		.uleb128 0x6
- 822 0064 40       		.uleb128 0x40
- 823 0065 18       		.uleb128 0x18
- 824 0066 9642     		.uleb128 0x2116
- 825 0068 19       		.uleb128 0x19
- 826 0069 01       		.uleb128 0x1
- 827 006a 13       		.uleb128 0x13
- 828 006b 00       		.byte	0
- 829 006c 00       		.byte	0
- 830 006d 07       		.uleb128 0x7
- 831 006e 34       		.uleb128 0x34
- 832 006f 00       		.byte	0
- 833 0070 03       		.uleb128 0x3
- 834 0071 0E       		.uleb128 0xe
- 835 0072 3A       		.uleb128 0x3a
- 836 0073 0B       		.uleb128 0xb
- 837 0074 3B       		.uleb128 0x3b
- 838 0075 0B       		.uleb128 0xb
- 839 0076 49       		.uleb128 0x49
- 840 0077 13       		.uleb128 0x13
- 841 0078 02       		.uleb128 0x2
- 842 0079 17       		.uleb128 0x17
- 843 007a 00       		.byte	0
- 844 007b 00       		.byte	0
- 845 007c 08       		.uleb128 0x8
- 846 007d 34       		.uleb128 0x34
- 847 007e 00       		.byte	0
- 848 007f 03       		.uleb128 0x3
- 849 0080 0E       		.uleb128 0xe
- 850 0081 3A       		.uleb128 0x3a
- 851 0082 0B       		.uleb128 0xb
- 852 0083 3B       		.uleb128 0x3b
- 853 0084 0B       		.uleb128 0xb
- 854 0085 49       		.uleb128 0x49
- 855 0086 13       		.uleb128 0x13
- 856 0087 1C       		.uleb128 0x1c
- 857 0088 0A       		.uleb128 0xa
- 858 0089 00       		.byte	0
- 859 008a 00       		.byte	0
- 860 008b 09       		.uleb128 0x9
- 861 008c 34       		.uleb128 0x34
- 862 008d 00       		.byte	0
- 863 008e 03       		.uleb128 0x3
-ARM GAS  C:\Users\dgitau\AppData\Local\Temp\ccsO7j4q.s 			page 18
+ 759 02c0 51       		.byte	0x51
+ 760 02c1 01       		.uleb128 0x1
+ 761 02c2 30       		.byte	0x30
+ 762 02c3 00       		.byte	0
+ 763 02c4 0F       		.uleb128 0xf
+ 764 02c5 86010000 		.4byte	.LVL47
+ 765 02c9 B0030000 		.4byte	0x3b0
+ 766 02cd 0E       		.uleb128 0xe
+ 767 02ce 01       		.uleb128 0x1
+ 768 02cf 50       		.byte	0x50
+ 769 02d0 02       		.uleb128 0x2
+ 770 02d1 74       		.byte	0x74
+ 771 02d2 00       		.sleb128 0
+ 772 02d3 00       		.byte	0
+ 773 02d4 00       		.byte	0
+ 774 02d5 10       		.uleb128 0x10
+ 775 02d6 71010000 		.4byte	.LASF26
+ 776 02da 04       		.byte	0x4
+ 777 02db 1207     		.2byte	0x712
+ 778 02dd E1020000 		.4byte	0x2e1
+ 779 02e1 11       		.uleb128 0x11
+ 780 02e2 7D000000 		.4byte	0x7d
+ 781 02e6 12       		.uleb128 0x12
+ 782 02e7 6B5F7000 		.ascii	"k_p\000"
+ 783 02eb 01       		.byte	0x1
+ 784 02ec 13       		.byte	0x13
+ 785 02ed 25000000 		.4byte	0x25
+ 786 02f1 05       		.uleb128 0x5
+ 787 02f2 03       		.byte	0x3
+ 788 02f3 00000000 		.4byte	k_p
+ 789 02f7 12       		.uleb128 0x12
+ 790 02f8 6B5F6900 		.ascii	"k_i\000"
+ 791 02fc 01       		.byte	0x1
+ 792 02fd 14       		.byte	0x14
+ 793 02fe 25000000 		.4byte	0x25
+ 794 0302 05       		.uleb128 0x5
+ 795 0303 03       		.byte	0x3
+ 796 0304 00000000 		.4byte	k_i
+ 797 0308 12       		.uleb128 0x12
+ 798 0309 6B5F6400 		.ascii	"k_d\000"
+ 799 030d 01       		.byte	0x1
+ 800 030e 15       		.byte	0x15
+ 801 030f 25000000 		.4byte	0x25
+ 802 0313 05       		.uleb128 0x5
+ 803 0314 03       		.byte	0x3
+ 804 0315 00000000 		.4byte	k_d
+ 805 0319 13       		.uleb128 0x13
+ 806 031a 4F000000 		.4byte	.LASF27
+ 807 031e 01       		.byte	0x1
+ 808 031f 17       		.byte	0x17
+ 809 0320 25000000 		.4byte	0x25
+ 810 0324 05       		.uleb128 0x5
+ 811 0325 03       		.byte	0x3
+ 812 0326 00000000 		.4byte	timer_max
+ 813 032a 13       		.uleb128 0x13
+ 814 032b 7E010000 		.4byte	.LASF28
+ 815 032f 01       		.byte	0x1
+ARM GAS  C:\Users\dgitau\AppData\Local\Temp\ccBBiuSO.s 			page 18
 
 
- 864 008f 0E       		.uleb128 0xe
- 865 0090 3A       		.uleb128 0x3a
- 866 0091 0B       		.uleb128 0xb
- 867 0092 3B       		.uleb128 0x3b
- 868 0093 0B       		.uleb128 0xb
- 869 0094 49       		.uleb128 0x49
- 870 0095 13       		.uleb128 0x13
- 871 0096 02       		.uleb128 0x2
- 872 0097 18       		.uleb128 0x18
- 873 0098 00       		.byte	0
- 874 0099 00       		.byte	0
- 875 009a 0A       		.uleb128 0xa
- 876 009b 898201   		.uleb128 0x4109
- 877 009e 00       		.byte	0
- 878 009f 11       		.uleb128 0x11
- 879 00a0 01       		.uleb128 0x1
- 880 00a1 31       		.uleb128 0x31
- 881 00a2 13       		.uleb128 0x13
- 882 00a3 00       		.byte	0
- 883 00a4 00       		.byte	0
- 884 00a5 0B       		.uleb128 0xb
- 885 00a6 898201   		.uleb128 0x4109
- 886 00a9 01       		.byte	0x1
- 887 00aa 11       		.uleb128 0x11
- 888 00ab 01       		.uleb128 0x1
- 889 00ac 31       		.uleb128 0x31
- 890 00ad 13       		.uleb128 0x13
- 891 00ae 01       		.uleb128 0x1
- 892 00af 13       		.uleb128 0x13
- 893 00b0 00       		.byte	0
- 894 00b1 00       		.byte	0
- 895 00b2 0C       		.uleb128 0xc
- 896 00b3 8A8201   		.uleb128 0x410a
- 897 00b6 00       		.byte	0
- 898 00b7 02       		.uleb128 0x2
- 899 00b8 18       		.uleb128 0x18
- 900 00b9 9142     		.uleb128 0x2111
- 901 00bb 18       		.uleb128 0x18
- 902 00bc 00       		.byte	0
- 903 00bd 00       		.byte	0
- 904 00be 0D       		.uleb128 0xd
- 905 00bf 898201   		.uleb128 0x4109
- 906 00c2 01       		.byte	0x1
- 907 00c3 11       		.uleb128 0x11
- 908 00c4 01       		.uleb128 0x1
- 909 00c5 31       		.uleb128 0x31
- 910 00c6 13       		.uleb128 0x13
- 911 00c7 00       		.byte	0
- 912 00c8 00       		.byte	0
- 913 00c9 0E       		.uleb128 0xe
- 914 00ca 01       		.uleb128 0x1
- 915 00cb 01       		.byte	0x1
- 916 00cc 49       		.uleb128 0x49
- 917 00cd 13       		.uleb128 0x13
- 918 00ce 01       		.uleb128 0x1
- 919 00cf 13       		.uleb128 0x13
- 920 00d0 00       		.byte	0
-ARM GAS  C:\Users\dgitau\AppData\Local\Temp\ccsO7j4q.s 			page 19
+ 816 0330 19       		.byte	0x19
+ 817 0331 25000000 		.4byte	0x25
+ 818 0335 05       		.uleb128 0x5
+ 819 0336 03       		.byte	0x3
+ 820 0337 00000000 		.4byte	wheel_diam_feet
+ 821 033b 13       		.uleb128 0x13
+ 822 033c DE020000 		.4byte	.LASF29
+ 823 0340 01       		.byte	0x1
+ 824 0341 1A       		.byte	0x1a
+ 825 0342 25000000 		.4byte	0x25
+ 826 0346 05       		.uleb128 0x5
+ 827 0347 03       		.byte	0x3
+ 828 0348 00000000 		.4byte	clock_frequency
+ 829 034c 13       		.uleb128 0x13
+ 830 034d 03030000 		.4byte	.LASF30
+ 831 0351 01       		.byte	0x1
+ 832 0352 1B       		.byte	0x1b
+ 833 0353 25000000 		.4byte	0x25
+ 834 0357 05       		.uleb128 0x5
+ 835 0358 03       		.byte	0x3
+ 836 0359 00000000 		.4byte	desired_speed
+ 837 035d 13       		.uleb128 0x13
+ 838 035e 59000000 		.4byte	.LASF31
+ 839 0362 01       		.byte	0x1
+ 840 0363 1C       		.byte	0x1c
+ 841 0364 6F000000 		.4byte	0x6f
+ 842 0368 05       		.uleb128 0x5
+ 843 0369 03       		.byte	0x3
+ 844 036a 00000000 		.4byte	magnet_flag
+ 845 036e 14       		.uleb128 0x14
+ 846 036f 17000000 		.4byte	.LASF32
+ 847 0373 17000000 		.4byte	.LASF32
+ 848 0377 05       		.byte	0x5
+ 849 0378 5E       		.byte	0x5e
+ 850 0379 14       		.uleb128 0x14
+ 851 037a C2020000 		.4byte	.LASF33
+ 852 037e C2020000 		.4byte	.LASF33
+ 853 0382 06       		.byte	0x6
+ 854 0383 92       		.byte	0x92
+ 855 0384 14       		.uleb128 0x14
+ 856 0385 F1010000 		.4byte	.LASF34
+ 857 0389 F1010000 		.4byte	.LASF34
+ 858 038d 05       		.byte	0x5
+ 859 038e 5A       		.byte	0x5a
+ 860 038f 14       		.uleb128 0x14
+ 861 0390 4C010000 		.4byte	.LASF35
+ 862 0394 4C010000 		.4byte	.LASF35
+ 863 0398 07       		.byte	0x7
+ 864 0399 17       		.byte	0x17
+ 865 039a 14       		.uleb128 0x14
+ 866 039b 7F000000 		.4byte	.LASF36
+ 867 039f 7F000000 		.4byte	.LASF36
+ 868 03a3 08       		.byte	0x8
+ 869 03a4 38       		.byte	0x38
+ 870 03a5 14       		.uleb128 0x14
+ 871 03a6 21020000 		.4byte	.LASF37
+ 872 03aa 21020000 		.4byte	.LASF37
+ARM GAS  C:\Users\dgitau\AppData\Local\Temp\ccBBiuSO.s 			page 19
 
 
- 921 00d1 00       		.byte	0
- 922 00d2 0F       		.uleb128 0xf
- 923 00d3 21       		.uleb128 0x21
- 924 00d4 00       		.byte	0
- 925 00d5 49       		.uleb128 0x49
- 926 00d6 13       		.uleb128 0x13
- 927 00d7 2F       		.uleb128 0x2f
- 928 00d8 0B       		.uleb128 0xb
- 929 00d9 00       		.byte	0
- 930 00da 00       		.byte	0
- 931 00db 10       		.uleb128 0x10
- 932 00dc 34       		.uleb128 0x34
- 933 00dd 00       		.byte	0
- 934 00de 03       		.uleb128 0x3
- 935 00df 08       		.uleb128 0x8
- 936 00e0 3A       		.uleb128 0x3a
- 937 00e1 0B       		.uleb128 0xb
- 938 00e2 3B       		.uleb128 0x3b
- 939 00e3 0B       		.uleb128 0xb
- 940 00e4 49       		.uleb128 0x49
- 941 00e5 13       		.uleb128 0x13
- 942 00e6 1C       		.uleb128 0x1c
- 943 00e7 0A       		.uleb128 0xa
- 944 00e8 00       		.byte	0
- 945 00e9 00       		.byte	0
- 946 00ea 11       		.uleb128 0x11
- 947 00eb 26       		.uleb128 0x26
- 948 00ec 00       		.byte	0
- 949 00ed 49       		.uleb128 0x49
- 950 00ee 13       		.uleb128 0x13
- 951 00ef 00       		.byte	0
- 952 00f0 00       		.byte	0
- 953 00f1 12       		.uleb128 0x12
- 954 00f2 34       		.uleb128 0x34
- 955 00f3 00       		.byte	0
- 956 00f4 03       		.uleb128 0x3
- 957 00f5 0E       		.uleb128 0xe
- 958 00f6 3A       		.uleb128 0x3a
- 959 00f7 0B       		.uleb128 0xb
- 960 00f8 3B       		.uleb128 0x3b
- 961 00f9 05       		.uleb128 0x5
- 962 00fa 49       		.uleb128 0x49
- 963 00fb 13       		.uleb128 0x13
- 964 00fc 3F       		.uleb128 0x3f
- 965 00fd 19       		.uleb128 0x19
- 966 00fe 3C       		.uleb128 0x3c
- 967 00ff 19       		.uleb128 0x19
- 968 0100 00       		.byte	0
- 969 0101 00       		.byte	0
- 970 0102 13       		.uleb128 0x13
- 971 0103 35       		.uleb128 0x35
- 972 0104 00       		.byte	0
- 973 0105 49       		.uleb128 0x49
- 974 0106 13       		.uleb128 0x13
- 975 0107 00       		.byte	0
- 976 0108 00       		.byte	0
- 977 0109 14       		.uleb128 0x14
-ARM GAS  C:\Users\dgitau\AppData\Local\Temp\ccsO7j4q.s 			page 20
+ 873 03ae 08       		.byte	0x8
+ 874 03af 3D       		.byte	0x3d
+ 875 03b0 14       		.uleb128 0x14
+ 876 03b1 D9010000 		.4byte	.LASF38
+ 877 03b5 D9010000 		.4byte	.LASF38
+ 878 03b9 08       		.byte	0x8
+ 879 03ba 3C       		.byte	0x3c
+ 880 03bb 14       		.uleb128 0x14
+ 881 03bc BE010000 		.4byte	.LASF39
+ 882 03c0 BE010000 		.4byte	.LASF39
+ 883 03c4 07       		.byte	0x7
+ 884 03c5 1D       		.byte	0x1d
+ 885 03c6 14       		.uleb128 0x14
+ 886 03c7 23030000 		.4byte	.LASF40
+ 887 03cb 23030000 		.4byte	.LASF40
+ 888 03cf 09       		.byte	0x9
+ 889 03d0 E7       		.byte	0xe7
+ 890 03d1 14       		.uleb128 0x14
+ 891 03d2 CC020000 		.4byte	.LASF41
+ 892 03d6 CC020000 		.4byte	.LASF41
+ 893 03da 05       		.byte	0x5
+ 894 03db 6B       		.byte	0x6b
+ 895 03dc 14       		.uleb128 0x14
+ 896 03dd AD010000 		.4byte	.LASF42
+ 897 03e1 AD010000 		.4byte	.LASF42
+ 898 03e5 06       		.byte	0x6
+ 899 03e6 C3       		.byte	0xc3
+ 900 03e7 00       		.byte	0
+ 901              		.section	.debug_abbrev,"",%progbits
+ 902              	.Ldebug_abbrev0:
+ 903 0000 01       		.uleb128 0x1
+ 904 0001 11       		.uleb128 0x11
+ 905 0002 01       		.byte	0x1
+ 906 0003 25       		.uleb128 0x25
+ 907 0004 0E       		.uleb128 0xe
+ 908 0005 13       		.uleb128 0x13
+ 909 0006 0B       		.uleb128 0xb
+ 910 0007 03       		.uleb128 0x3
+ 911 0008 0E       		.uleb128 0xe
+ 912 0009 1B       		.uleb128 0x1b
+ 913 000a 0E       		.uleb128 0xe
+ 914 000b 55       		.uleb128 0x55
+ 915 000c 17       		.uleb128 0x17
+ 916 000d 11       		.uleb128 0x11
+ 917 000e 01       		.uleb128 0x1
+ 918 000f 10       		.uleb128 0x10
+ 919 0010 17       		.uleb128 0x17
+ 920 0011 00       		.byte	0
+ 921 0012 00       		.byte	0
+ 922 0013 02       		.uleb128 0x2
+ 923 0014 24       		.uleb128 0x24
+ 924 0015 00       		.byte	0
+ 925 0016 0B       		.uleb128 0xb
+ 926 0017 0B       		.uleb128 0xb
+ 927 0018 3E       		.uleb128 0x3e
+ 928 0019 0B       		.uleb128 0xb
+ 929 001a 03       		.uleb128 0x3
+ARM GAS  C:\Users\dgitau\AppData\Local\Temp\ccBBiuSO.s 			page 20
 
 
- 978 010a 2E       		.uleb128 0x2e
- 979 010b 00       		.byte	0
- 980 010c 3F       		.uleb128 0x3f
- 981 010d 19       		.uleb128 0x19
- 982 010e 3C       		.uleb128 0x3c
- 983 010f 19       		.uleb128 0x19
- 984 0110 6E       		.uleb128 0x6e
- 985 0111 0E       		.uleb128 0xe
- 986 0112 03       		.uleb128 0x3
- 987 0113 0E       		.uleb128 0xe
- 988 0114 3A       		.uleb128 0x3a
- 989 0115 0B       		.uleb128 0xb
- 990 0116 3B       		.uleb128 0x3b
- 991 0117 0B       		.uleb128 0xb
- 992 0118 00       		.byte	0
- 993 0119 00       		.byte	0
- 994 011a 00       		.byte	0
- 995              		.section	.debug_loc,"",%progbits
- 996              	.Ldebug_loc0:
- 997              	.LLST0:
- 998 0000 A6000000 		.4byte	.LVL17
- 999 0004 4A010000 		.4byte	.LVL38
- 1000 0008 0600     		.2byte	0x6
- 1001 000a 58       		.byte	0x58
- 1002 000b 93       		.byte	0x93
- 1003 000c 04       		.uleb128 0x4
- 1004 000d 59       		.byte	0x59
- 1005 000e 93       		.byte	0x93
- 1006 000f 04       		.uleb128 0x4
- 1007 0010 00000000 		.4byte	0
- 1008 0014 00000000 		.4byte	0
- 1009              	.LLST1:
- 1010 0018 22010000 		.4byte	.LVL31
- 1011 001c 25010000 		.4byte	.LVL32-1
- 1012 0020 0600     		.2byte	0x6
- 1013 0022 50       		.byte	0x50
- 1014 0023 93       		.byte	0x93
- 1015 0024 04       		.uleb128 0x4
- 1016 0025 51       		.byte	0x51
- 1017 0026 93       		.byte	0x93
- 1018 0027 04       		.uleb128 0x4
- 1019 0028 00000000 		.4byte	0
- 1020 002c 00000000 		.4byte	0
- 1021              	.LLST2:
- 1022 0030 8C000000 		.4byte	.LVL14
- 1023 0034 8F000000 		.4byte	.LVL15-1
- 1024 0038 0100     		.2byte	0x1
- 1025 003a 50       		.byte	0x50
- 1026 003b 00000000 		.4byte	0
- 1027 003f 00000000 		.4byte	0
- 1028              	.LLST3:
- 1029 0043 B6000000 		.4byte	.LVL19
- 1030 0047 4A010000 		.4byte	.LVL38
- 1031 004b 0600     		.2byte	0x6
- 1032 004d 54       		.byte	0x54
- 1033 004e 93       		.byte	0x93
- 1034 004f 04       		.uleb128 0x4
-ARM GAS  C:\Users\dgitau\AppData\Local\Temp\ccsO7j4q.s 			page 21
+ 930 001b 0E       		.uleb128 0xe
+ 931 001c 00       		.byte	0
+ 932 001d 00       		.byte	0
+ 933 001e 03       		.uleb128 0x3
+ 934 001f 16       		.uleb128 0x16
+ 935 0020 00       		.byte	0
+ 936 0021 03       		.uleb128 0x3
+ 937 0022 0E       		.uleb128 0xe
+ 938 0023 3A       		.uleb128 0x3a
+ 939 0024 0B       		.uleb128 0xb
+ 940 0025 3B       		.uleb128 0x3b
+ 941 0026 0B       		.uleb128 0xb
+ 942 0027 49       		.uleb128 0x49
+ 943 0028 13       		.uleb128 0x13
+ 944 0029 00       		.byte	0
+ 945 002a 00       		.byte	0
+ 946 002b 04       		.uleb128 0x4
+ 947 002c 24       		.uleb128 0x24
+ 948 002d 00       		.byte	0
+ 949 002e 0B       		.uleb128 0xb
+ 950 002f 0B       		.uleb128 0xb
+ 951 0030 3E       		.uleb128 0x3e
+ 952 0031 0B       		.uleb128 0xb
+ 953 0032 03       		.uleb128 0x3
+ 954 0033 08       		.uleb128 0x8
+ 955 0034 00       		.byte	0
+ 956 0035 00       		.byte	0
+ 957 0036 05       		.uleb128 0x5
+ 958 0037 2E       		.uleb128 0x2e
+ 959 0038 01       		.byte	0x1
+ 960 0039 3F       		.uleb128 0x3f
+ 961 003a 19       		.uleb128 0x19
+ 962 003b 03       		.uleb128 0x3
+ 963 003c 0E       		.uleb128 0xe
+ 964 003d 3A       		.uleb128 0x3a
+ 965 003e 0B       		.uleb128 0xb
+ 966 003f 3B       		.uleb128 0x3b
+ 967 0040 0B       		.uleb128 0xb
+ 968 0041 27       		.uleb128 0x27
+ 969 0042 19       		.uleb128 0x19
+ 970 0043 11       		.uleb128 0x11
+ 971 0044 01       		.uleb128 0x1
+ 972 0045 12       		.uleb128 0x12
+ 973 0046 06       		.uleb128 0x6
+ 974 0047 40       		.uleb128 0x40
+ 975 0048 18       		.uleb128 0x18
+ 976 0049 9742     		.uleb128 0x2117
+ 977 004b 19       		.uleb128 0x19
+ 978 004c 01       		.uleb128 0x1
+ 979 004d 13       		.uleb128 0x13
+ 980 004e 00       		.byte	0
+ 981 004f 00       		.byte	0
+ 982 0050 06       		.uleb128 0x6
+ 983 0051 34       		.uleb128 0x34
+ 984 0052 00       		.byte	0
+ 985 0053 03       		.uleb128 0x3
+ 986 0054 0E       		.uleb128 0xe
+ARM GAS  C:\Users\dgitau\AppData\Local\Temp\ccBBiuSO.s 			page 21
 
 
- 1035 0050 55       		.byte	0x55
- 1036 0051 93       		.byte	0x93
- 1037 0052 04       		.uleb128 0x4
- 1038 0053 00000000 		.4byte	0
- 1039 0057 00000000 		.4byte	0
- 1040              	.LLST4:
- 1041 005b C6000000 		.4byte	.LVL21
- 1042 005f CC000000 		.4byte	.LVL22
- 1043 0063 0600     		.2byte	0x6
- 1044 0065 50       		.byte	0x50
- 1045 0066 93       		.byte	0x93
- 1046 0067 04       		.uleb128 0x4
- 1047 0068 51       		.byte	0x51
- 1048 0069 93       		.byte	0x93
- 1049 006a 04       		.uleb128 0x4
- 1050 006b CC000000 		.4byte	.LVL22
- 1051 006f 4A010000 		.4byte	.LVL38
- 1052 0073 0200     		.2byte	0x2
- 1053 0075 7D       		.byte	0x7d
- 1054 0076 00       		.sleb128 0
- 1055 0077 00000000 		.4byte	0
- 1056 007b 00000000 		.4byte	0
- 1057              	.LLST5:
- 1058 007f DE000000 		.4byte	.LVL26
- 1059 0083 48010000 		.4byte	.LVL37
- 1060 0087 0600     		.2byte	0x6
- 1061 0089 5A       		.byte	0x5a
- 1062 008a 93       		.byte	0x93
- 1063 008b 04       		.uleb128 0x4
- 1064 008c 5B       		.byte	0x5b
- 1065 008d 93       		.byte	0x93
- 1066 008e 04       		.uleb128 0x4
- 1067 008f 00000000 		.4byte	0
- 1068 0093 00000000 		.4byte	0
- 1069              	.LLST6:
- 1070 0097 28000000 		.4byte	.LVL5
- 1071 009b 30000000 		.4byte	.LVL6
- 1072 009f 0A00     		.2byte	0xa
- 1073 00a1 9E       		.byte	0x9e
- 1074 00a2 08       		.uleb128 0x8
- 1075 00a3 00000000 		.4byte	0
- 1076 00a7 00000000 		.4byte	0
- 1077 00ab 30000000 		.4byte	.LVL6
- 1078 00af DC000000 		.4byte	.LVL25
- 1079 00b3 0600     		.2byte	0x6
- 1080 00b5 5A       		.byte	0x5a
- 1081 00b6 93       		.byte	0x93
- 1082 00b7 04       		.uleb128 0x4
- 1083 00b8 5B       		.byte	0x5b
- 1084 00b9 93       		.byte	0x93
- 1085 00ba 04       		.uleb128 0x4
- 1086 00bb 2C010000 		.4byte	.LVL33
- 1087 00bf 4A010000 		.4byte	.LVL38
- 1088 00c3 0600     		.2byte	0x6
- 1089 00c5 54       		.byte	0x54
- 1090 00c6 93       		.byte	0x93
- 1091 00c7 04       		.uleb128 0x4
-ARM GAS  C:\Users\dgitau\AppData\Local\Temp\ccsO7j4q.s 			page 22
+ 987 0055 3A       		.uleb128 0x3a
+ 988 0056 0B       		.uleb128 0xb
+ 989 0057 3B       		.uleb128 0x3b
+ 990 0058 0B       		.uleb128 0xb
+ 991 0059 49       		.uleb128 0x49
+ 992 005a 13       		.uleb128 0x13
+ 993 005b 00       		.byte	0
+ 994 005c 00       		.byte	0
+ 995 005d 07       		.uleb128 0x7
+ 996 005e 898201   		.uleb128 0x4109
+ 997 0061 00       		.byte	0
+ 998 0062 11       		.uleb128 0x11
+ 999 0063 01       		.uleb128 0x1
+ 1000 0064 31       		.uleb128 0x31
+ 1001 0065 13       		.uleb128 0x13
+ 1002 0066 00       		.byte	0
+ 1003 0067 00       		.byte	0
+ 1004 0068 08       		.uleb128 0x8
+ 1005 0069 01       		.uleb128 0x1
+ 1006 006a 01       		.byte	0x1
+ 1007 006b 49       		.uleb128 0x49
+ 1008 006c 13       		.uleb128 0x13
+ 1009 006d 01       		.uleb128 0x1
+ 1010 006e 13       		.uleb128 0x13
+ 1011 006f 00       		.byte	0
+ 1012 0070 00       		.byte	0
+ 1013 0071 09       		.uleb128 0x9
+ 1014 0072 21       		.uleb128 0x21
+ 1015 0073 00       		.byte	0
+ 1016 0074 49       		.uleb128 0x49
+ 1017 0075 13       		.uleb128 0x13
+ 1018 0076 2F       		.uleb128 0x2f
+ 1019 0077 0B       		.uleb128 0xb
+ 1020 0078 00       		.byte	0
+ 1021 0079 00       		.byte	0
+ 1022 007a 0A       		.uleb128 0xa
+ 1023 007b 2E       		.uleb128 0x2e
+ 1024 007c 01       		.byte	0x1
+ 1025 007d 3F       		.uleb128 0x3f
+ 1026 007e 19       		.uleb128 0x19
+ 1027 007f 03       		.uleb128 0x3
+ 1028 0080 0E       		.uleb128 0xe
+ 1029 0081 3A       		.uleb128 0x3a
+ 1030 0082 0B       		.uleb128 0xb
+ 1031 0083 3B       		.uleb128 0x3b
+ 1032 0084 0B       		.uleb128 0xb
+ 1033 0085 27       		.uleb128 0x27
+ 1034 0086 19       		.uleb128 0x19
+ 1035 0087 49       		.uleb128 0x49
+ 1036 0088 13       		.uleb128 0x13
+ 1037 0089 8701     		.uleb128 0x87
+ 1038 008b 19       		.uleb128 0x19
+ 1039 008c 11       		.uleb128 0x11
+ 1040 008d 01       		.uleb128 0x1
+ 1041 008e 12       		.uleb128 0x12
+ 1042 008f 06       		.uleb128 0x6
+ 1043 0090 40       		.uleb128 0x40
+ARM GAS  C:\Users\dgitau\AppData\Local\Temp\ccBBiuSO.s 			page 22
 
 
- 1092 00c8 55       		.byte	0x55
- 1093 00c9 93       		.byte	0x93
- 1094 00ca 04       		.uleb128 0x4
- 1095 00cb 4A010000 		.4byte	.LVL38
- 1096 00cf 78010000 		.4byte	.LFE65
- 1097 00d3 0600     		.2byte	0x6
- 1098 00d5 5A       		.byte	0x5a
- 1099 00d6 93       		.byte	0x93
- 1100 00d7 04       		.uleb128 0x4
- 1101 00d8 5B       		.byte	0x5b
- 1102 00d9 93       		.byte	0x93
- 1103 00da 04       		.uleb128 0x4
- 1104 00db 00000000 		.4byte	0
- 1105 00df 00000000 		.4byte	0
- 1106              	.LLST7:
- 1107 00e3 4E000000 		.4byte	.LVL7
- 1108 00e7 5A000000 		.4byte	.LVL10
- 1109 00eb 0100     		.2byte	0x1
- 1110 00ed 54       		.byte	0x54
- 1111 00ee 00000000 		.4byte	0
- 1112 00f2 00000000 		.4byte	0
- 1113              	.LLST8:
- 1114 00f6 78000000 		.4byte	.LVL11
- 1115 00fa 80000000 		.4byte	.LVL12
- 1116 00fe 0100     		.2byte	0x1
- 1117 0100 53       		.byte	0x53
- 1118 0101 80000000 		.4byte	.LVL12
- 1119 0105 87000000 		.4byte	.LVL13-1
- 1120 0109 3300     		.2byte	0x33
- 1121 010b 03       		.byte	0x3
- 1122 010c 04000000 		.4byte	index_of_magnet
- 1123 0110 06       		.byte	0x6
- 1124 0111 31       		.byte	0x31
- 1125 0112 1C       		.byte	0x1c
- 1126 0113 F7       		.byte	0xf7
- 1127 0114 33       		.uleb128 0x33
- 1128 0115 F7       		.byte	0xf7
- 1129 0116 25       		.uleb128 0x25
- 1130 0117 0C       		.byte	0xc
- 1131 0118 67666666 		.4byte	0x66666667
- 1132 011c F7       		.byte	0xf7
- 1133 011d 25       		.uleb128 0x25
- 1134 011e 1E       		.byte	0x1e
- 1135 011f 08       		.byte	0x8
- 1136 0120 20       		.byte	0x20
- 1137 0121 F7       		.byte	0xf7
- 1138 0122 25       		.uleb128 0x25
- 1139 0123 25       		.byte	0x25
- 1140 0124 F7       		.byte	0xf7
- 1141 0125 2C       		.uleb128 0x2c
- 1142 0126 31       		.byte	0x31
- 1143 0127 26       		.byte	0x26
- 1144 0128 03       		.byte	0x3
- 1145 0129 04000000 		.4byte	index_of_magnet
- 1146 012d 06       		.byte	0x6
- 1147 012e 31       		.byte	0x31
- 1148 012f 1C       		.byte	0x1c
-ARM GAS  C:\Users\dgitau\AppData\Local\Temp\ccsO7j4q.s 			page 23
+ 1044 0091 18       		.uleb128 0x18
+ 1045 0092 9642     		.uleb128 0x2116
+ 1046 0094 19       		.uleb128 0x19
+ 1047 0095 01       		.uleb128 0x1
+ 1048 0096 13       		.uleb128 0x13
+ 1049 0097 00       		.byte	0
+ 1050 0098 00       		.byte	0
+ 1051 0099 0B       		.uleb128 0xb
+ 1052 009a 34       		.uleb128 0x34
+ 1053 009b 00       		.byte	0
+ 1054 009c 03       		.uleb128 0x3
+ 1055 009d 0E       		.uleb128 0xe
+ 1056 009e 3A       		.uleb128 0x3a
+ 1057 009f 0B       		.uleb128 0xb
+ 1058 00a0 3B       		.uleb128 0x3b
+ 1059 00a1 0B       		.uleb128 0xb
+ 1060 00a2 49       		.uleb128 0x49
+ 1061 00a3 13       		.uleb128 0x13
+ 1062 00a4 02       		.uleb128 0x2
+ 1063 00a5 17       		.uleb128 0x17
+ 1064 00a6 00       		.byte	0
+ 1065 00a7 00       		.byte	0
+ 1066 00a8 0C       		.uleb128 0xc
+ 1067 00a9 34       		.uleb128 0x34
+ 1068 00aa 00       		.byte	0
+ 1069 00ab 03       		.uleb128 0x3
+ 1070 00ac 0E       		.uleb128 0xe
+ 1071 00ad 3A       		.uleb128 0x3a
+ 1072 00ae 0B       		.uleb128 0xb
+ 1073 00af 3B       		.uleb128 0x3b
+ 1074 00b0 0B       		.uleb128 0xb
+ 1075 00b1 49       		.uleb128 0x49
+ 1076 00b2 13       		.uleb128 0x13
+ 1077 00b3 02       		.uleb128 0x2
+ 1078 00b4 18       		.uleb128 0x18
+ 1079 00b5 00       		.byte	0
+ 1080 00b6 00       		.byte	0
+ 1081 00b7 0D       		.uleb128 0xd
+ 1082 00b8 898201   		.uleb128 0x4109
+ 1083 00bb 01       		.byte	0x1
+ 1084 00bc 11       		.uleb128 0x11
+ 1085 00bd 01       		.uleb128 0x1
+ 1086 00be 31       		.uleb128 0x31
+ 1087 00bf 13       		.uleb128 0x13
+ 1088 00c0 01       		.uleb128 0x1
+ 1089 00c1 13       		.uleb128 0x13
+ 1090 00c2 00       		.byte	0
+ 1091 00c3 00       		.byte	0
+ 1092 00c4 0E       		.uleb128 0xe
+ 1093 00c5 8A8201   		.uleb128 0x410a
+ 1094 00c8 00       		.byte	0
+ 1095 00c9 02       		.uleb128 0x2
+ 1096 00ca 18       		.uleb128 0x18
+ 1097 00cb 9142     		.uleb128 0x2111
+ 1098 00cd 18       		.uleb128 0x18
+ 1099 00ce 00       		.byte	0
+ 1100 00cf 00       		.byte	0
+ARM GAS  C:\Users\dgitau\AppData\Local\Temp\ccBBiuSO.s 			page 23
 
 
- 1149 0130 4F       		.byte	0x4f
- 1150 0131 26       		.byte	0x26
- 1151 0132 1C       		.byte	0x1c
- 1152 0133 35       		.byte	0x35
- 1153 0134 1E       		.byte	0x1e
- 1154 0135 20       		.byte	0x20
- 1155 0136 03       		.byte	0x3
- 1156 0137 04000000 		.4byte	index_of_magnet
- 1157 013b 06       		.byte	0x6
- 1158 013c 22       		.byte	0x22
- 1159 013d 9F       		.byte	0x9f
- 1160 013e 00000000 		.4byte	0
- 1161 0142 00000000 		.4byte	0
- 1162              		.section	.debug_aranges,"",%progbits
- 1163 0000 24000000 		.4byte	0x24
- 1164 0004 0200     		.2byte	0x2
- 1165 0006 00000000 		.4byte	.Ldebug_info0
- 1166 000a 04       		.byte	0x4
- 1167 000b 00       		.byte	0
- 1168 000c 0000     		.2byte	0
- 1169 000e 0000     		.2byte	0
- 1170 0010 00000000 		.4byte	.LFB64
- 1171 0014 14000000 		.4byte	.LFE64-.LFB64
- 1172 0018 00000000 		.4byte	.LFB65
- 1173 001c 78010000 		.4byte	.LFE65-.LFB65
- 1174 0020 00000000 		.4byte	0
- 1175 0024 00000000 		.4byte	0
- 1176              		.section	.debug_ranges,"",%progbits
- 1177              	.Ldebug_ranges0:
- 1178 0000 00000000 		.4byte	.LFB64
- 1179 0004 14000000 		.4byte	.LFE64
- 1180 0008 00000000 		.4byte	.LFB65
- 1181 000c 78010000 		.4byte	.LFE65
- 1182 0010 00000000 		.4byte	0
- 1183 0014 00000000 		.4byte	0
- 1184              		.section	.debug_line,"",%progbits
- 1185              	.Ldebug_line0:
- 1186 0000 2B020000 		.section	.debug_str,"MS",%progbits,1
- 1186      0200E601 
- 1186      00000201 
- 1186      FB0E0D00 
- 1186      01010101 
- 1187              	.LASF25:
- 1188 0000 70726576 		.ascii	"previous_index\000"
- 1188      696F7573 
- 1188      5F696E64 
- 1188      657800
- 1189              	.LASF24:
- 1190 000f 63757272 		.ascii	"current_index\000"
- 1190      656E745F 
- 1190      696E6465 
- 1190      7800
- 1191              	.LASF9:
- 1192 001d 5F5F696E 		.ascii	"__int32_t\000"
- 1192      7433325F 
- 1192      7400
- 1193              	.LASF26:
-ARM GAS  C:\Users\dgitau\AppData\Local\Temp\ccsO7j4q.s 			page 24
+ 1101 00d0 0F       		.uleb128 0xf
+ 1102 00d1 898201   		.uleb128 0x4109
+ 1103 00d4 01       		.byte	0x1
+ 1104 00d5 11       		.uleb128 0x11
+ 1105 00d6 01       		.uleb128 0x1
+ 1106 00d7 31       		.uleb128 0x31
+ 1107 00d8 13       		.uleb128 0x13
+ 1108 00d9 00       		.byte	0
+ 1109 00da 00       		.byte	0
+ 1110 00db 10       		.uleb128 0x10
+ 1111 00dc 34       		.uleb128 0x34
+ 1112 00dd 00       		.byte	0
+ 1113 00de 03       		.uleb128 0x3
+ 1114 00df 0E       		.uleb128 0xe
+ 1115 00e0 3A       		.uleb128 0x3a
+ 1116 00e1 0B       		.uleb128 0xb
+ 1117 00e2 3B       		.uleb128 0x3b
+ 1118 00e3 05       		.uleb128 0x5
+ 1119 00e4 49       		.uleb128 0x49
+ 1120 00e5 13       		.uleb128 0x13
+ 1121 00e6 3F       		.uleb128 0x3f
+ 1122 00e7 19       		.uleb128 0x19
+ 1123 00e8 3C       		.uleb128 0x3c
+ 1124 00e9 19       		.uleb128 0x19
+ 1125 00ea 00       		.byte	0
+ 1126 00eb 00       		.byte	0
+ 1127 00ec 11       		.uleb128 0x11
+ 1128 00ed 35       		.uleb128 0x35
+ 1129 00ee 00       		.byte	0
+ 1130 00ef 49       		.uleb128 0x49
+ 1131 00f0 13       		.uleb128 0x13
+ 1132 00f1 00       		.byte	0
+ 1133 00f2 00       		.byte	0
+ 1134 00f3 12       		.uleb128 0x12
+ 1135 00f4 34       		.uleb128 0x34
+ 1136 00f5 00       		.byte	0
+ 1137 00f6 03       		.uleb128 0x3
+ 1138 00f7 08       		.uleb128 0x8
+ 1139 00f8 3A       		.uleb128 0x3a
+ 1140 00f9 0B       		.uleb128 0xb
+ 1141 00fa 3B       		.uleb128 0x3b
+ 1142 00fb 0B       		.uleb128 0xb
+ 1143 00fc 49       		.uleb128 0x49
+ 1144 00fd 13       		.uleb128 0x13
+ 1145 00fe 3F       		.uleb128 0x3f
+ 1146 00ff 19       		.uleb128 0x19
+ 1147 0100 02       		.uleb128 0x2
+ 1148 0101 18       		.uleb128 0x18
+ 1149 0102 00       		.byte	0
+ 1150 0103 00       		.byte	0
+ 1151 0104 13       		.uleb128 0x13
+ 1152 0105 34       		.uleb128 0x34
+ 1153 0106 00       		.byte	0
+ 1154 0107 03       		.uleb128 0x3
+ 1155 0108 0E       		.uleb128 0xe
+ 1156 0109 3A       		.uleb128 0x3a
+ 1157 010a 0B       		.uleb128 0xb
+ARM GAS  C:\Users\dgitau\AppData\Local\Temp\ccBBiuSO.s 			page 24
 
 
- 1194 0027 7374725F 		.ascii	"str_buffer\000"
- 1194      62756666 
- 1194      657200
- 1195              	.LASF12:
- 1196 0032 646F7562 		.ascii	"double\000"
- 1196      6C6500
- 1197              	.LASF29:
- 1198 0039 6D61676E 		.ascii	"magnet_flag\000"
- 1198      65745F66 
- 1198      6C616700 
- 1199              	.LASF10:
- 1200 0045 696E7433 		.ascii	"int32_t\000"
- 1200      325F7400 
- 1201              	.LASF11:
- 1202 004d 666C6F61 		.ascii	"float\000"
- 1202      7400
- 1203              	.LASF2:
- 1204 0053 7369676E 		.ascii	"signed char\000"
- 1204      65642063 
- 1204      68617200 
- 1205              	.LASF3:
- 1206 005f 756E7369 		.ascii	"unsigned char\000"
- 1206      676E6564 
- 1206      20636861 
- 1206      7200
- 1207              	.LASF41:
- 1208 006d 474E5520 		.ascii	"GNU C11 5.4.1 20160609 (release) [ARM/embedded-5-br"
- 1208      43313120 
- 1208      352E342E 
- 1208      31203230 
- 1208      31363036 
- 1209 00a0 616E6368 		.ascii	"anch revision 237715] -mcpu=cortex-m3 -mthumb -g -O"
- 1209      20726576 
- 1209      6973696F 
- 1209      6E203233 
- 1209      37373135 
- 1210 00d3 67202D66 		.ascii	"g -ffunction-sections -ffat-lto-objects\000"
- 1210      66756E63 
- 1210      74696F6E 
- 1210      2D736563 
- 1210      74696F6E 
- 1211              	.LASF27:
- 1212 00fb 77686565 		.ascii	"wheel_diam_inches\000"
- 1212      6C5F6469 
- 1212      616D5F69 
- 1212      6E636865 
- 1212      7300
- 1213              	.LASF31:
- 1214 010d 6D61676E 		.ascii	"magnet_view_times\000"
- 1214      65745F76 
- 1214      6965775F 
- 1214      74696D65 
- 1214      7300
- 1215              	.LASF23:
- 1216 011f 6C617374 		.ascii	"last_error\000"
- 1216      5F657272 
- 1216      6F7200
-ARM GAS  C:\Users\dgitau\AppData\Local\Temp\ccsO7j4q.s 			page 25
+ 1158 010b 3B       		.uleb128 0x3b
+ 1159 010c 0B       		.uleb128 0xb
+ 1160 010d 49       		.uleb128 0x49
+ 1161 010e 13       		.uleb128 0x13
+ 1162 010f 3F       		.uleb128 0x3f
+ 1163 0110 19       		.uleb128 0x19
+ 1164 0111 02       		.uleb128 0x2
+ 1165 0112 18       		.uleb128 0x18
+ 1166 0113 00       		.byte	0
+ 1167 0114 00       		.byte	0
+ 1168 0115 14       		.uleb128 0x14
+ 1169 0116 2E       		.uleb128 0x2e
+ 1170 0117 00       		.byte	0
+ 1171 0118 3F       		.uleb128 0x3f
+ 1172 0119 19       		.uleb128 0x19
+ 1173 011a 3C       		.uleb128 0x3c
+ 1174 011b 19       		.uleb128 0x19
+ 1175 011c 6E       		.uleb128 0x6e
+ 1176 011d 0E       		.uleb128 0xe
+ 1177 011e 03       		.uleb128 0x3
+ 1178 011f 0E       		.uleb128 0xe
+ 1179 0120 3A       		.uleb128 0x3a
+ 1180 0121 0B       		.uleb128 0xb
+ 1181 0122 3B       		.uleb128 0x3b
+ 1182 0123 0B       		.uleb128 0xb
+ 1183 0124 00       		.byte	0
+ 1184 0125 00       		.byte	0
+ 1185 0126 00       		.byte	0
+ 1186              		.section	.debug_loc,"",%progbits
+ 1187              	.Ldebug_loc0:
+ 1188              	.LLST0:
+ 1189 0000 08000000 		.4byte	.LVL1
+ 1190 0004 62000000 		.4byte	.LVL13
+ 1191 0008 0A00     		.2byte	0xa
+ 1192 000a 9E       		.byte	0x9e
+ 1193 000b 08       		.uleb128 0x8
+ 1194 000c 00000000 		.4byte	0
+ 1195 0010 00000000 		.4byte	0
+ 1196 0014 DC000000 		.4byte	.LVL28
+ 1197 0018 E3000000 		.4byte	.LVL29-1
+ 1198 001c 0600     		.2byte	0x6
+ 1199 001e 52       		.byte	0x52
+ 1200 001f 93       		.byte	0x93
+ 1201 0020 04       		.uleb128 0x4
+ 1202 0021 53       		.byte	0x53
+ 1203 0022 93       		.byte	0x93
+ 1204 0023 04       		.uleb128 0x4
+ 1205 0024 E3000000 		.4byte	.LVL29-1
+ 1206 0028 6C010000 		.4byte	.LVL44
+ 1207 002c 0300     		.2byte	0x3
+ 1208 002e 91       		.byte	0x91
+ 1209 002f B87F     		.sleb128 -72
+ 1210 0031 00000000 		.4byte	0
+ 1211 0035 00000000 		.4byte	0
+ 1212              	.LLST1:
+ 1213 0039 08000000 		.4byte	.LVL1
+ 1214 003d 62000000 		.4byte	.LVL13
+ARM GAS  C:\Users\dgitau\AppData\Local\Temp\ccBBiuSO.s 			page 25
 
 
- 1217              	.LASF18:
- 1218 012a 6D61676E 		.ascii	"magnet_separation_distance\000"
- 1218      65745F73 
- 1218      65706172 
- 1218      6174696F 
- 1218      6E5F6469 
- 1219              	.LASF5:
- 1220 0145 73686F72 		.ascii	"short unsigned int\000"
- 1220      7420756E 
- 1220      7369676E 
- 1220      65642069 
- 1220      6E7400
- 1221              	.LASF46:
- 1222 0158 49544D5F 		.ascii	"ITM_RxBuffer\000"
- 1222      52784275 
- 1222      66666572 
- 1222      00
- 1223              	.LASF44:
- 1224 0165 6D61676E 		.ascii	"magnet_inter\000"
- 1224      65745F69 
- 1224      6E746572 
- 1224      00
- 1225              	.LASF34:
- 1226 0172 436F756E 		.ascii	"Counter_Interrupt_Start\000"
- 1226      7465725F 
- 1226      496E7465 
- 1226      72727570 
- 1226      745F5374 
- 1227              	.LASF39:
- 1228 018a 50574D5F 		.ascii	"PWM_WriteCompare\000"
- 1228      57726974 
- 1228      65436F6D 
- 1228      70617265 
- 1228      00
- 1229              	.LASF16:
- 1230 019b 696E7075 		.ascii	"input_speed\000"
- 1230      745F7370 
- 1230      65656400 
- 1231              	.LASF37:
- 1232 01a7 4C43445F 		.ascii	"LCD_PrintString\000"
- 1232      5072696E 
- 1232      74537472 
- 1232      696E6700 
- 1233              	.LASF21:
- 1234 01b7 6572725F 		.ascii	"err_sum\000"
- 1234      73756D00 
- 1235              	.LASF33:
- 1236 01bf 54696D65 		.ascii	"Timer_Start\000"
- 1236      725F5374 
- 1236      61727400 
- 1237              	.LASF7:
- 1238 01cb 6C6F6E67 		.ascii	"long unsigned int\000"
- 1238      20756E73 
- 1238      69676E65 
- 1238      6420696E 
- 1238      7400
- 1239              	.LASF1:
-ARM GAS  C:\Users\dgitau\AppData\Local\Temp\ccsO7j4q.s 			page 26
+ 1215 0041 0A00     		.2byte	0xa
+ 1216 0043 9E       		.byte	0x9e
+ 1217 0044 08       		.uleb128 0x8
+ 1218 0045 00000000 		.4byte	0
+ 1219 0049 00000000 		.4byte	0
+ 1220 004d 2E010000 		.4byte	.LVL38
+ 1221 0051 31010000 		.4byte	.LVL39-1
+ 1222 0055 0600     		.2byte	0x6
+ 1223 0057 50       		.byte	0x50
+ 1224 0058 93       		.byte	0x93
+ 1225 0059 04       		.uleb128 0x4
+ 1226 005a 51       		.byte	0x51
+ 1227 005b 93       		.byte	0x93
+ 1228 005c 04       		.uleb128 0x4
+ 1229 005d 00000000 		.4byte	0
+ 1230 0061 00000000 		.4byte	0
+ 1231              	.LLST2:
+ 1232 0065 24000000 		.4byte	.LVL4
+ 1233 0069 2B000000 		.4byte	.LVL6-1
+ 1234 006d 0600     		.2byte	0x6
+ 1235 006f 50       		.byte	0x50
+ 1236 0070 93       		.byte	0x93
+ 1237 0071 04       		.uleb128 0x4
+ 1238 0072 51       		.byte	0x51
+ 1239 0073 93       		.byte	0x93
+ 1240 0074 04       		.uleb128 0x4
+ 1241 0075 2B000000 		.4byte	.LVL6-1
+ 1242 0079 C4010000 		.4byte	.LFE65
+ 1243 007d 0200     		.2byte	0x2
+ 1244 007f 91       		.byte	0x91
+ 1245 0080 40       		.sleb128 -64
+ 1246 0081 00000000 		.4byte	0
+ 1247 0085 00000000 		.4byte	0
+ 1248              	.LLST3:
+ 1249 0089 28000000 		.4byte	.LVL5
+ 1250 008d C6000000 		.4byte	.LVL25
+ 1251 0091 0600     		.2byte	0x6
+ 1252 0093 56       		.byte	0x56
+ 1253 0094 93       		.byte	0x93
+ 1254 0095 04       		.uleb128 0x4
+ 1255 0096 57       		.byte	0x57
+ 1256 0097 93       		.byte	0x93
+ 1257 0098 04       		.uleb128 0x4
+ 1258 0099 6C010000 		.4byte	.LVL44
+ 1259 009d 86010000 		.4byte	.LVL47
+ 1260 00a1 0600     		.2byte	0x6
+ 1261 00a3 56       		.byte	0x56
+ 1262 00a4 93       		.byte	0x93
+ 1263 00a5 04       		.uleb128 0x4
+ 1264 00a6 57       		.byte	0x57
+ 1265 00a7 93       		.byte	0x93
+ 1266 00a8 04       		.uleb128 0x4
+ 1267 00a9 8C010000 		.4byte	.LVL48
+ 1268 00ad C4010000 		.4byte	.LFE65
+ 1269 00b1 0200     		.2byte	0x2
+ 1270 00b3 7D       		.byte	0x7d
+ 1271 00b4 00       		.sleb128 0
+ARM GAS  C:\Users\dgitau\AppData\Local\Temp\ccBBiuSO.s 			page 26
 
 
- 1240 01dd 756E7369 		.ascii	"unsigned int\000"
- 1240      676E6564 
- 1240      20696E74 
- 1240      00
- 1241              	.LASF0:
- 1242 01ea 6C6F6E67 		.ascii	"long long unsigned int\000"
- 1242      206C6F6E 
- 1242      6720756E 
- 1242      7369676E 
- 1242      65642069 
- 1243              	.LASF22:
- 1244 0201 6572725F 		.ascii	"err_derivative\000"
- 1244      64657269 
- 1244      76617469 
- 1244      766500
- 1245              	.LASF36:
- 1246 0210 4C43445F 		.ascii	"LCD_Position\000"
- 1246      506F7369 
- 1246      74696F6E 
- 1246      00
- 1247              	.LASF43:
- 1248 021d 433A5C55 		.ascii	"C:\\Users\\dgitau\\PSoC Creator\\Workspace01\\Speed"
- 1248      73657273 
- 1248      5C646769 
- 1248      7461755C 
- 1248      50536F43 
- 1249 024b 436F6E74 		.ascii	"Control.cydsn\000"
- 1249      726F6C2E 
- 1249      63796473 
- 1249      6E00
- 1250              	.LASF19:
- 1251 0259 74696D65 		.ascii	"time_delta\000"
- 1251      5F64656C 
- 1251      746100
- 1252              	.LASF17:
- 1253 0264 6F757470 		.ascii	"output_speed\000"
- 1253      75745F73 
- 1253      70656564 
- 1253      00
- 1254              	.LASF30:
- 1255 0271 696E6465 		.ascii	"index_of_magnet\000"
- 1255      785F6F66 
- 1255      5F6D6167 
- 1255      6E657400 
- 1256              	.LASF15:
- 1257 0281 73697A65 		.ascii	"sizetype\000"
- 1257      74797065 
- 1257      00
- 1258              	.LASF20:
- 1259 028a 6572726F 		.ascii	"error\000"
- 1259      7200
- 1260              	.LASF8:
- 1261 0290 6C6F6E67 		.ascii	"long long int\000"
- 1261      206C6F6E 
- 1261      6720696E 
- 1261      7400
- 1262              	.LASF42:
-ARM GAS  C:\Users\dgitau\AppData\Local\Temp\ccsO7j4q.s 			page 27
+ 1272 00b5 00000000 		.4byte	0
+ 1273 00b9 00000000 		.4byte	0
+ 1274              	.LLST4:
+ 1275 00bd 28000000 		.4byte	.LVL5
+ 1276 00c1 62000000 		.4byte	.LVL13
+ 1277 00c5 1000     		.2byte	0x10
+ 1278 00c7 F5       		.byte	0xf5
+ 1279 00c8 06       		.uleb128 0x6
+ 1280 00c9 25       		.uleb128 0x25
+ 1281 00ca F4       		.byte	0xf4
+ 1282 00cb 25       		.uleb128 0x25
+ 1283 00cc 08       		.byte	0x8
+ 1284 00cd 00000000 		.4byte	0
+ 1285 00d1 0000E03F 		.4byte	0x3fe00000
+ 1286 00d5 1E       		.byte	0x1e
+ 1287 00d6 9F       		.byte	0x9f
+ 1288 00d7 92000000 		.4byte	.LVL20
+ 1289 00db 9E000000 		.4byte	.LVL21
+ 1290 00df 0600     		.2byte	0x6
+ 1291 00e1 50       		.byte	0x50
+ 1292 00e2 93       		.byte	0x93
+ 1293 00e3 04       		.uleb128 0x4
+ 1294 00e4 51       		.byte	0x51
+ 1295 00e5 93       		.byte	0x93
+ 1296 00e6 04       		.uleb128 0x4
+ 1297 00e7 9E000000 		.4byte	.LVL21
+ 1298 00eb 6C010000 		.4byte	.LVL44
+ 1299 00ef 0200     		.2byte	0x2
+ 1300 00f1 7D       		.byte	0x7d
+ 1301 00f2 00       		.sleb128 0
+ 1302 00f3 6C010000 		.4byte	.LVL44
+ 1303 00f7 74010000 		.4byte	.LVL45
+ 1304 00fb 0600     		.2byte	0x6
+ 1305 00fd 50       		.byte	0x50
+ 1306 00fe 93       		.byte	0x93
+ 1307 00ff 04       		.uleb128 0x4
+ 1308 0100 51       		.byte	0x51
+ 1309 0101 93       		.byte	0x93
+ 1310 0102 04       		.uleb128 0x4
+ 1311 0103 74010000 		.4byte	.LVL45
+ 1312 0107 C4010000 		.4byte	.LFE65
+ 1313 010b 0200     		.2byte	0x2
+ 1314 010d 7D       		.byte	0x7d
+ 1315 010e 00       		.sleb128 0
+ 1316 010f 00000000 		.4byte	0
+ 1317 0113 00000000 		.4byte	0
+ 1318              	.LLST5:
+ 1319 0117 28000000 		.4byte	.LVL5
+ 1320 011b 62000000 		.4byte	.LVL13
+ 1321 011f 1000     		.2byte	0x10
+ 1322 0121 F5       		.byte	0xf5
+ 1323 0122 06       		.uleb128 0x6
+ 1324 0123 25       		.uleb128 0x25
+ 1325 0124 F4       		.byte	0xf4
+ 1326 0125 25       		.uleb128 0x25
+ 1327 0126 08       		.byte	0x8
+ 1328 0127 00000000 		.4byte	0
+ARM GAS  C:\Users\dgitau\AppData\Local\Temp\ccBBiuSO.s 			page 27
 
 
- 1263 029e 6D61696E 		.ascii	"main.c\000"
- 1263      2E6300
- 1264              	.LASF13:
- 1265 02a5 63686172 		.ascii	"char\000"
- 1265      00
- 1266              	.LASF45:
- 1267 02aa 6D61696E 		.ascii	"main\000"
- 1267      00
- 1268              	.LASF4:
- 1269 02af 73686F72 		.ascii	"short int\000"
- 1269      7420696E 
- 1269      7400
- 1270              	.LASF32:
- 1271 02b9 50574D5F 		.ascii	"PWM_Start\000"
- 1271      53746172 
- 1271      7400
- 1272              	.LASF38:
- 1273 02c3 54696D65 		.ascii	"Timer_ReadCapture\000"
- 1273      725F5265 
- 1273      61644361 
- 1273      70747572 
- 1273      6500
- 1274              	.LASF6:
- 1275 02d5 6C6F6E67 		.ascii	"long int\000"
- 1275      20696E74 
- 1275      00
- 1276              	.LASF14:
- 1277 02de 6C6F6E67 		.ascii	"long double\000"
- 1277      20646F75 
- 1277      626C6500 
- 1278              	.LASF28:
- 1279 02ea 64657369 		.ascii	"desired_speed\000"
- 1279      7265645F 
- 1279      73706565 
- 1279      6400
- 1280              	.LASF35:
- 1281 02f8 436F756E 		.ascii	"Counter_Interrupt_SetVector\000"
- 1281      7465725F 
- 1281      496E7465 
- 1281      72727570 
- 1281      745F5365 
- 1282              	.LASF40:
- 1283 0314 73707269 		.ascii	"sprintf\000"
- 1283      6E746600 
- 1284              		.ident	"GCC: (GNU Tools for ARM Embedded Processors) 5.4.1 20160609 (release) [ARM/embedded-5-bran
+ 1329 012b 0000E03F 		.4byte	0x3fe00000
+ 1330 012f 1E       		.byte	0x1e
+ 1331 0130 9F       		.byte	0x9f
+ 1332 0131 C8000000 		.4byte	.LVL26
+ 1333 0135 6C010000 		.4byte	.LVL44
+ 1334 0139 0600     		.2byte	0x6
+ 1335 013b 56       		.byte	0x56
+ 1336 013c 93       		.byte	0x93
+ 1337 013d 04       		.uleb128 0x4
+ 1338 013e 57       		.byte	0x57
+ 1339 013f 93       		.byte	0x93
+ 1340 0140 04       		.uleb128 0x4
+ 1341 0141 00000000 		.4byte	0
+ 1342 0145 00000000 		.4byte	0
+ 1343              	.LLST6:
+ 1344 0149 28000000 		.4byte	.LVL5
+ 1345 014d 62000000 		.4byte	.LVL13
+ 1346 0151 0200     		.2byte	0x2
+ 1347 0153 30       		.byte	0x30
+ 1348 0154 9F       		.byte	0x9f
+ 1349 0155 62000000 		.4byte	.LVL13
+ 1350 0159 C4010000 		.4byte	.LFE65
+ 1351 015d 0100     		.2byte	0x1
+ 1352 015f 5B       		.byte	0x5b
+ 1353 0160 00000000 		.4byte	0
+ 1354 0164 00000000 		.4byte	0
+ 1355              	.LLST7:
+ 1356 0168 28000000 		.4byte	.LVL5
+ 1357 016c 2B000000 		.4byte	.LVL6-1
+ 1358 0170 1500     		.2byte	0x15
+ 1359 0172 F4       		.byte	0xf4
+ 1360 0173 25       		.uleb128 0x25
+ 1361 0174 08       		.byte	0x8
+ 1362 0175 00000000 		.4byte	0
+ 1363 0179 00000000 		.4byte	0
+ 1364 017d 03       		.byte	0x3
+ 1365 017e 00000000 		.4byte	desired_speed
+ 1366 0182 F6       		.byte	0xf6
+ 1367 0183 08       		.byte	0x8
+ 1368 0184 25       		.uleb128 0x25
+ 1369 0185 1C       		.byte	0x1c
+ 1370 0186 9F       		.byte	0x9f
+ 1371 0187 E8000000 		.4byte	.LVL30
+ 1372 018b 12010000 		.4byte	.LVL36
+ 1373 018f 0600     		.2byte	0x6
+ 1374 0191 54       		.byte	0x54
+ 1375 0192 93       		.byte	0x93
+ 1376 0193 04       		.uleb128 0x4
+ 1377 0194 55       		.byte	0x55
+ 1378 0195 93       		.byte	0x93
+ 1379 0196 04       		.uleb128 0x4
+ 1380 0197 00000000 		.4byte	0
+ 1381 019b 00000000 		.4byte	0
+ 1382              	.LLST8:
+ 1383 019f 28000000 		.4byte	.LVL5
+ 1384 01a3 62000000 		.4byte	.LVL13
+ 1385 01a7 0A00     		.2byte	0xa
+ARM GAS  C:\Users\dgitau\AppData\Local\Temp\ccBBiuSO.s 			page 28
+
+
+ 1386 01a9 9E       		.byte	0x9e
+ 1387 01aa 08       		.uleb128 0x8
+ 1388 01ab 00000000 		.4byte	0
+ 1389 01af 00000000 		.4byte	0
+ 1390 01b3 62000000 		.4byte	.LVL13
+ 1391 01b7 02010000 		.4byte	.LVL33
+ 1392 01bb 0600     		.2byte	0x6
+ 1393 01bd 58       		.byte	0x58
+ 1394 01be 93       		.byte	0x93
+ 1395 01bf 04       		.uleb128 0x4
+ 1396 01c0 59       		.byte	0x59
+ 1397 01c1 93       		.byte	0x93
+ 1398 01c2 04       		.uleb128 0x4
+ 1399 01c3 04010000 		.4byte	.LVL34
+ 1400 01c7 C4010000 		.4byte	.LFE65
+ 1401 01cb 0600     		.2byte	0x6
+ 1402 01cd 58       		.byte	0x58
+ 1403 01ce 93       		.byte	0x93
+ 1404 01cf 04       		.uleb128 0x4
+ 1405 01d0 59       		.byte	0x59
+ 1406 01d1 93       		.byte	0x93
+ 1407 01d2 04       		.uleb128 0x4
+ 1408 01d3 00000000 		.4byte	0
+ 1409 01d7 00000000 		.4byte	0
+ 1410              		.section	.debug_aranges,"",%progbits
+ 1411 0000 24000000 		.4byte	0x24
+ 1412 0004 0200     		.2byte	0x2
+ 1413 0006 00000000 		.4byte	.Ldebug_info0
+ 1414 000a 04       		.byte	0x4
+ 1415 000b 00       		.byte	0
+ 1416 000c 0000     		.2byte	0
+ 1417 000e 0000     		.2byte	0
+ 1418 0010 00000000 		.4byte	.LFB64
+ 1419 0014 14000000 		.4byte	.LFE64-.LFB64
+ 1420 0018 00000000 		.4byte	.LFB65
+ 1421 001c C4010000 		.4byte	.LFE65-.LFB65
+ 1422 0020 00000000 		.4byte	0
+ 1423 0024 00000000 		.4byte	0
+ 1424              		.section	.debug_ranges,"",%progbits
+ 1425              	.Ldebug_ranges0:
+ 1426 0000 00000000 		.4byte	.LFB64
+ 1427 0004 14000000 		.4byte	.LFE64
+ 1428 0008 00000000 		.4byte	.LFB65
+ 1429 000c C4010000 		.4byte	.LFE65
+ 1430 0010 00000000 		.4byte	0
+ 1431 0014 00000000 		.4byte	0
+ 1432              		.section	.debug_line,"",%progbits
+ 1433              	.Ldebug_line0:
+ 1434 0000 37020000 		.section	.debug_str,"MS",%progbits,1
+ 1434      0200E501 
+ 1434      00000201 
+ 1434      FB0E0D00 
+ 1434      01010101 
+ 1435              	.LASF20:
+ 1436 0000 63757272 		.ascii	"current_time\000"
+ 1436      656E745F 
+ 1436      74696D65 
+ARM GAS  C:\Users\dgitau\AppData\Local\Temp\ccBBiuSO.s 			page 29
+
+
+ 1436      00
+ 1437              	.LASF10:
+ 1438 000d 5F5F696E 		.ascii	"__int32_t\000"
+ 1438      7433325F 
+ 1438      7400
+ 1439              	.LASF32:
+ 1440 0017 54696D65 		.ascii	"Timer_ReadStatusRegister\000"
+ 1440      725F5265 
+ 1440      61645374 
+ 1440      61747573 
+ 1440      52656769 
+ 1441              	.LASF4:
+ 1442 0030 73686F72 		.ascii	"short unsigned int\000"
+ 1442      7420756E 
+ 1442      7369676E 
+ 1442      65642069 
+ 1442      6E7400
+ 1443              	.LASF16:
+ 1444 0043 696E7075 		.ascii	"input_speed\000"
+ 1444      745F7370 
+ 1444      65656400 
+ 1445              	.LASF27:
+ 1446 004f 74696D65 		.ascii	"timer_max\000"
+ 1446      725F6D61 
+ 1446      7800
+ 1447              	.LASF31:
+ 1448 0059 6D61676E 		.ascii	"magnet_flag\000"
+ 1448      65745F66 
+ 1448      6C616700 
+ 1449              	.LASF23:
+ 1450 0065 6D61676E 		.ascii	"magnet_view_counter\000"
+ 1450      65745F76 
+ 1450      6965775F 
+ 1450      636F756E 
+ 1450      74657200 
+ 1451              	.LASF12:
+ 1452 0079 666C6F61 		.ascii	"float\000"
+ 1452      7400
+ 1453              	.LASF36:
+ 1454 007f 4C43445F 		.ascii	"LCD_Start\000"
+ 1454      53746172 
+ 1454      7400
+ 1455              	.LASF1:
+ 1456 0089 7369676E 		.ascii	"signed char\000"
+ 1456      65642063 
+ 1456      68617200 
+ 1457              	.LASF2:
+ 1458 0095 756E7369 		.ascii	"unsigned char\000"
+ 1458      676E6564 
+ 1458      20636861 
+ 1458      7200
+ 1459              	.LASF43:
+ 1460 00a3 474E5520 		.ascii	"GNU C11 5.4.1 20160609 (release) [ARM/embedded-5-br"
+ 1460      43313120 
+ 1460      352E342E 
+ 1460      31203230 
+ 1460      31363036 
+ARM GAS  C:\Users\dgitau\AppData\Local\Temp\ccBBiuSO.s 			page 30
+
+
+ 1461 00d6 616E6368 		.ascii	"anch revision 237715] -mcpu=cortex-m3 -mthumb -g -O"
+ 1461      20726576 
+ 1461      6973696F 
+ 1461      6E203233 
+ 1461      37373135 
+ 1462 0109 67202D66 		.ascii	"g -ffunction-sections -ffat-lto-objects\000"
+ 1462      66756E63 
+ 1462      74696F6E 
+ 1462      2D736563 
+ 1462      74696F6E 
+ 1463              	.LASF18:
+ 1464 0131 6D61676E 		.ascii	"magnet_separation_distance\000"
+ 1464      65745F73 
+ 1464      65706172 
+ 1464      6174696F 
+ 1464      6E5F6469 
+ 1465              	.LASF35:
+ 1466 014c 4D61676E 		.ascii	"Magnet_Interrupt_Start\000"
+ 1466      65745F49 
+ 1466      6E746572 
+ 1466      72757074 
+ 1466      5F537461 
+ 1467              	.LASF19:
+ 1468 0163 70726576 		.ascii	"previous_time\000"
+ 1468      696F7573 
+ 1468      5F74696D 
+ 1468      6500
+ 1469              	.LASF26:
+ 1470 0171 49544D5F 		.ascii	"ITM_RxBuffer\000"
+ 1470      52784275 
+ 1470      66666572 
+ 1470      00
+ 1471              	.LASF28:
+ 1472 017e 77686565 		.ascii	"wheel_diam_feet\000"
+ 1472      6C5F6469 
+ 1472      616D5F66 
+ 1472      65657400 
+ 1473              	.LASF46:
+ 1474 018e 6D61676E 		.ascii	"magnet_inter\000"
+ 1474      65745F69 
+ 1474      6E746572 
+ 1474      00
+ 1475              	.LASF6:
+ 1476 019b 6C6F6E67 		.ascii	"long unsigned int\000"
+ 1476      20756E73 
+ 1476      69676E65 
+ 1476      6420696E 
+ 1476      7400
+ 1477              	.LASF42:
+ 1478 01ad 50574D5F 		.ascii	"PWM_WriteCompare\000"
+ 1478      57726974 
+ 1478      65436F6D 
+ 1478      70617265 
+ 1478      00
+ 1479              	.LASF39:
+ 1480 01be 4D61676E 		.ascii	"Magnet_Interrupt_SetVector\000"
+ 1480      65745F49 
+ARM GAS  C:\Users\dgitau\AppData\Local\Temp\ccBBiuSO.s 			page 31
+
+
+ 1480      6E746572 
+ 1480      72757074 
+ 1480      5F536574 
+ 1481              	.LASF38:
+ 1482 01d9 4C43445F 		.ascii	"LCD_PrintString\000"
+ 1482      5072696E 
+ 1482      74537472 
+ 1482      696E6700 
+ 1483              	.LASF25:
+ 1484 01e9 6572725F 		.ascii	"err_sum\000"
+ 1484      73756D00 
+ 1485              	.LASF34:
+ 1486 01f1 54696D65 		.ascii	"Timer_Start\000"
+ 1486      725F5374 
+ 1486      61727400 
+ 1487              	.LASF9:
+ 1488 01fd 756E7369 		.ascii	"unsigned int\000"
+ 1488      676E6564 
+ 1488      20696E74 
+ 1488      00
+ 1489              	.LASF8:
+ 1490 020a 6C6F6E67 		.ascii	"long long unsigned int\000"
+ 1490      206C6F6E 
+ 1490      6720756E 
+ 1490      7369676E 
+ 1490      65642069 
+ 1491              	.LASF37:
+ 1492 0221 4C43445F 		.ascii	"LCD_Position\000"
+ 1492      506F7369 
+ 1492      74696F6E 
+ 1492      00
+ 1493              	.LASF45:
+ 1494 022e 433A5C55 		.ascii	"C:\\Users\\dgitau\\PSoC Creator\\Workspace01\\Speed"
+ 1494      73657273 
+ 1494      5C646769 
+ 1494      7461755C 
+ 1494      50536F43 
+ 1495 025c 436F6E74 		.ascii	"Control.cydsn\000"
+ 1495      726F6C2E 
+ 1495      63796473 
+ 1495      6E00
+ 1496              	.LASF21:
+ 1497 026a 74696D65 		.ascii	"time_delta\000"
+ 1497      5F64656C 
+ 1497      746100
+ 1498              	.LASF17:
+ 1499 0275 6F757470 		.ascii	"output_speed\000"
+ 1499      75745F73 
+ 1499      70656564 
+ 1499      00
+ 1500              	.LASF11:
+ 1501 0282 696E7433 		.ascii	"int32_t\000"
+ 1501      325F7400 
+ 1502              	.LASF15:
+ 1503 028a 73697A65 		.ascii	"sizetype\000"
+ 1503      74797065 
+ 1503      00
+ARM GAS  C:\Users\dgitau\AppData\Local\Temp\ccBBiuSO.s 			page 32
+
+
+ 1504              	.LASF24:
+ 1505 0293 6572726F 		.ascii	"error\000"
+ 1505      7200
+ 1506              	.LASF7:
+ 1507 0299 6C6F6E67 		.ascii	"long long int\000"
+ 1507      206C6F6E 
+ 1507      6720696E 
+ 1507      7400
+ 1508              	.LASF44:
+ 1509 02a7 6D61696E 		.ascii	"main.c\000"
+ 1509      2E6300
+ 1510              	.LASF13:
+ 1511 02ae 63686172 		.ascii	"char\000"
+ 1511      00
+ 1512              	.LASF47:
+ 1513 02b3 6D61696E 		.ascii	"main\000"
+ 1513      00
+ 1514              	.LASF3:
+ 1515 02b8 73686F72 		.ascii	"short int\000"
+ 1515      7420696E 
+ 1515      7400
+ 1516              	.LASF33:
+ 1517 02c2 50574D5F 		.ascii	"PWM_Start\000"
+ 1517      53746172 
+ 1517      7400
+ 1518              	.LASF41:
+ 1519 02cc 54696D65 		.ascii	"Timer_ReadCapture\000"
+ 1519      725F5265 
+ 1519      61644361 
+ 1519      70747572 
+ 1519      6500
+ 1520              	.LASF29:
+ 1521 02de 636C6F63 		.ascii	"clock_frequency\000"
+ 1521      6B5F6672 
+ 1521      65717565 
+ 1521      6E637900 
+ 1522              	.LASF5:
+ 1523 02ee 6C6F6E67 		.ascii	"long int\000"
+ 1523      20696E74 
+ 1523      00
+ 1524              	.LASF14:
+ 1525 02f7 6C6F6E67 		.ascii	"long double\000"
+ 1525      20646F75 
+ 1525      626C6500 
+ 1526              	.LASF30:
+ 1527 0303 64657369 		.ascii	"desired_speed\000"
+ 1527      7265645F 
+ 1527      73706565 
+ 1527      6400
+ 1528              	.LASF0:
+ 1529 0311 646F7562 		.ascii	"double\000"
+ 1529      6C6500
+ 1530              	.LASF22:
+ 1531 0318 7374725F 		.ascii	"str_buffer\000"
+ 1531      62756666 
+ 1531      657200
+ 1532              	.LASF40:
+ARM GAS  C:\Users\dgitau\AppData\Local\Temp\ccBBiuSO.s 			page 33
+
+
+ 1533 0323 73707269 		.ascii	"sprintf\000"
+ 1533      6E746600 
+ 1534              		.ident	"GCC: (GNU Tools for ARM Embedded Processors) 5.4.1 20160609 (release) [ARM/embedded-5-bran

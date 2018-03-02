@@ -8,6 +8,7 @@
 <files />
 <projects>
 <v>.\SpeedControl.cydsn\SpeedControl.cyprj</v>
+<v>.\Test.cydsn\Test.cyprj</v>
 </projects>
 <workspace_id v="265d3a45-2cbf-4406-95eb-0d7bca4822d9" />
 <WriteAppVersionLastSavedWith v="4.1.0.3210" />
