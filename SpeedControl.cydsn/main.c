@@ -9,6 +9,7 @@
 
 #include "project.h"
 #include <stdio.h>
+#include <time.h>
 
 /* General Strategy:
  * Update k_p till we get to the target speed 
@@ -16,8 +17,8 @@
  * We'll not be using k_d in this control loop
  */
 
-double k_p = 10;  /* Gives us a fast rise time */
-double k_i = 10;  /* Allows us to correct the steady state error */
+double k_p = 5;  /* Gives us a fast rise time */
+double k_i = 7;  /* Allows us to correct the steady state error */
 double k_d = 0;  /* Dampens the system and reduces overshoot */
 
 double timer_max = 65535.0f;
@@ -78,6 +79,9 @@ int main(void) {
     char str_buffer[16];
     int magnet_view_counter = 0;
     double time_diff;
+    uintmax_t stop_watch_start = time(NULL);
+    uintmax_t stop_watch_current = time(NULL);
+    double stop_watch_delta = 0;
     
     double error = input_speed - desired_speed;
     double err_sum = 0;
@@ -88,11 +92,7 @@ int main(void) {
     Magnet_Interrupt_Start();
     LCD_Start();
     
-    sprintf(str_buffer, "Speed Control");
-    LCD_Position(0, 0);
-    LCD_PrintString(str_buffer);
-    
-    /* PWM_WriteCompare(70); */
+   
     Magnet_Interrupt_SetVector(magnet_inter);
     
     for(;;) {
@@ -109,9 +109,6 @@ int main(void) {
             magnet_view_counter += 1;
             
             current_time = (double)(Timer_ReadCapture());
-            
-           
-            
             
             /* Run this block only after the first magnet has been seen */
             if (magnet_view_counter != 1) {
@@ -130,7 +127,7 @@ int main(void) {
                 err_sum += error * time_delta;
         
                 /* Compute the PID output */
-                output_speed = k_p * error + k_i * err_sum + 20;
+                output_speed = k_p * error + k_i * err_sum + 10;
         
                 /* Send the output signal to the MOSFET controlling the motor */
                 PWM_WriteCompare(output_speed);
@@ -139,12 +136,18 @@ int main(void) {
                 /* sprintf(str_buffer, "I:%.2f, O:%.2f", input_speed, output_speed); */
                 
                 if (magnet_view_counter % 10 == 0) {
-                    /*sprintf(str_buffer, "%.2f", input_speed);
-                    LCD_Position(0, 0);
-                    LCD_PrintString(str_buffer);*/
-                    sprintf(str_buffer, "%.2f", error);
+                    sprintf(str_buffer, "I:%.2f E:%.2f", input_speed, error);
                     LCD_Position(0, 0);
                     LCD_PrintString(str_buffer);
+                    
+                    
+                    stop_watch_current = time(NULL);
+                    stop_watch_delta = (double)(stop_watch_current - stop_watch_start);
+                    sprintf(str_buffer, "Sec: %.2f", stop_watch_delta);
+                    LCD_Position(1, 0);
+                    LCD_PrintString(str_buffer);
+                    
+                    
                 }
             
             } else {
