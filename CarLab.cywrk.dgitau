@@ -210,11 +210,6 @@
 <OpenDocs>
 <name v=".\SpeedControl.cydsn\TopDesign\TopDesign.cysch" />
 <name v=".\SpeedControl.cydsn\main.c" />
-<name v=".\SpeedControl.cydsn\Generated_Source\PSoC5\LCD.c" />
-<name v=".\SpeedControl.cydsn\SpeedControl.cydwr" />
-<name v=".\SpeedControl.cydsn\Generated_Source\PSoC5\CyLib.c" />
-<name v=".\SpeedControl.cydsn\Generated_Source\PSoC5\CyBootAsmGnu.s" />
-<name v=".\SpeedControl.cydsn\Generated_Source\PSoC5\cytypes.h" />
 </OpenDocs>
 <OpenDocsLayout><![CDATA[<?xml version="1.0"?><!--
 
@@ -222,7 +217,7 @@
   Copyright (c) 2001-2016 Actipro Software LLC.  All rights reserved.
   http://www.actiprosoftware.com
 
---><DocumentLayout Version="1.0"><LayoutData><TabbedMdiRootContainer Orientation="Horizontal"><TabbedMdiContainer Size="1001, 639" SelectedTabbedMdiWindow="97ea9a3c-9403-4024-a728-6798fb4539e8"><DocumentWindow Key="C:\Users\dgitau\PSoC Creator\Workspace01\SpeedControl.cydsn\TopDesign\TopDesign.cysch" Guid="c0fc8d23-b6eb-4f08-8590-86ba48be7b01" /><DocumentWindow Key="C:\Users\dgitau\PSoC Creator\Workspace01\SpeedControl.cydsn\main.c" Guid="97ea9a3c-9403-4024-a728-6798fb4539e8" /><DocumentWindow Key="C:\Users\dgitau\PSoC Creator\Workspace01\SpeedControl.cydsn\Generated_Source\PSoC5\LCD.c" Guid="2a166a83-62a9-49f8-bfd7-9d4875e4a254" /><DocumentWindow Key="C:\Users\dgitau\PSoC Creator\Workspace01\SpeedControl.cydsn\SpeedControl.cydwr" Guid="61ac7b04-9f5a-485e-abe2-ac46b4aa329f" /><DocumentWindow Key="C:\Users\dgitau\PSoC Creator\Workspace01\SpeedControl.cydsn\Generated_Source\PSoC5\CyLib.c" Guid="aa7fbac5-e4a6-4ac4-b241-ea9f1509d700" /><DocumentWindow Key="C:\Users\dgitau\PSoC Creator\Workspace01\SpeedControl.cydsn\Generated_Source\PSoC5\CyBootAsmGnu.s" Guid="1a26e0f2-22ed-4f5e-9b52-9edab1f615de" /><DocumentWindow Key="C:\Users\dgitau\PSoC Creator\Workspace01\SpeedControl.cydsn\Generated_Source\PSoC5\cytypes.h" Guid="848f13cf-ae2f-4a46-92bc-f20a063613cb" /><ToolWindow Key="Start Page:bd4649ab-da6b-4d04-a663-c722b8bf99db:Start Page" Guid="734edb89-d804-469f-9e43-20fea579ec30" /></TabbedMdiContainer></TabbedMdiRootContainer><FloatingContainers /></LayoutData></DocumentLayout>]]></OpenDocsLayout>
+--><DocumentLayout Version="1.0"><LayoutData><TabbedMdiRootContainer Orientation="Horizontal"><TabbedMdiContainer Size="742, 639" SelectedTabbedMdiWindow="c0fc8d23-b6eb-4f08-8590-86ba48be7b01"><DocumentWindow Key="C:\Users\dgitau\PSoC Creator\Workspace01\SpeedControl.cydsn\TopDesign\TopDesign.cysch" Guid="c0fc8d23-b6eb-4f08-8590-86ba48be7b01" /><DocumentWindow Key="C:\Users\dgitau\PSoC Creator\Workspace01\SpeedControl.cydsn\main.c" Guid="97ea9a3c-9403-4024-a728-6798fb4539e8" /></TabbedMdiContainer></TabbedMdiRootContainer><FloatingContainers /></LayoutData></DocumentLayout>]]></OpenDocsLayout>
 <config v="" />
 <AutoUpdate v="true" />
 </CyGuid_843a90a4-0c4b-4e44-991d-05e7fb117a21>
