@@ -1,0 +1,7 @@
+C:\Users\dgitau\PSoC Creator\car_lab_ele_302-navigation\SpeedControl.cydsn\SpeedControl.cyprj|e38d5d11-7aec-40af-b29d-66cff8bea522
+C:\Program Files (x86)\Cypress\PSoC Creator\4.1\PSoC Creator\psoc\content\default\CyAnnotationLibrary\CyAnnotationLibrary.cylib\CyAnnotationLibrary.cyprj|3a43ec30-b749-48c9-9aa0-3beb54ec889c
+\\Files\dgitau\PSoC Creator\4.1\Downloads ( 4.1).cylib\Downloads ( 4.1).cyprj|9287687f-e87f-476a-8e83-2dc9799b27bc
+C:\Program Files (x86)\Cypress\PSoC Creator\4.1\PSoC Creator\psoc\content\cycomponentlibraryupdates\CyComponentLibraryUpdates.cylib\CyComponentLibraryUpdates.cyprj|38c68c70-1664-4ae7-a5f4-6f75920dca16
+C:\Program Files (x86)\Cypress\PSoC Creator\4.1\PSoC Creator\psoc\content\cycomponentlibrary\CyComponentLibrary.cylib\CyComponentLibrary.cyprj|216c7f9b-02da-43fd-9821-2fb662b6b659
+C:\Program Files (x86)\Cypress\PSoC Creator\4.1\PSoC Creator\psoc\content\cyprimitives\CyPrimitives.cylib\CyPrimitives.cyprj|7f8265d2-b072-446d-a67e-21e2ec06349d
+C:\Users\dgitau\PSoC Creator\car_lab_ele_302-navigation\Test.cydsn\Test.cyprj|e76ed4e8-f445-4d80-88f0-b9b1d5903957
