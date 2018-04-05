@@ -31,18 +31,37 @@ double clock_frequency = 10000.0f; /* Frequency of the clock in Hz */
 double desired_speed = 4.0f;   /* Reference speed 4ft/sec */
 int magnet_flag = 0;    /* Keeps track of magnet passes */
 
+/* The line at which we'll check the black line */
+int ith_line = 50; 
+/* Boolean for deciding whether to listen to composite sync output */
+int count_up_to_ith_line_flag = 0; 
+/* A counter for the line number */
+int current_line_number = 0;  
+
+
 /* Set the flag that communicates that we've just seen a magnet */
 CY_ISR(magnet_inter) {
     magnet_flag = 1;
     Timer_ReadStatusRegister();
 }
 
-/* */
+/* If we encounter a dip in the vertical sync output, a new frame has
+ * started. Set the flag that tells to listen for the ith line of our
+ * choice.
+ */
 CY_ISR(vertical_sync_inter) {
+    count_up_to_ith_line_flag = 1;
+    current_line_number = 0;
 }
 
-/* */
+/*
+ * If the flag is true, count the lines up to i, and then set out to
+ * determine the black line's position using the comparator output.
+ */
 CY_ISR(composite_sync_inter) {
+    if (count_up_to_ith_line_flag) {
+        
+    }
 }
 
 /* */
