@@ -1,10 +1,10 @@
-Loading plugins phase: Elapsed time ==> 0s.127ms
+Loading plugins phase: Elapsed time ==> 0s.154ms
 <CYPRESSTAG name="CyDsfit arguments...">
 cydsfit arguments: -.fdsnotice -.fdswarpdepfile=warp_dependencies.txt -.fdselabdepfile=elab_dependencies.txt -.fdsbldfile=generated_files.txt -.fdsreffile=referenced_files.txt -p C:\Users\dgitau\PSoC Creator\car_lab_ele_302-navigation\SpeedControl.cydsn\SpeedControl.cyprj -d CY8C5868AXI-LP035 -s C:\Users\dgitau\PSoC Creator\car_lab_ele_302-navigation\SpeedControl.cydsn\Generated_Source\PSoC5 -- -yv2 -q10 -ygs -o2 -v3 -.fftcfgtype=LE
 </CYPRESSTAG>
 <CYPRESSTAG name="Design elaboration results...">
 </CYPRESSTAG>
-Elaboration phase: Elapsed time ==> 1s.126ms
+Elaboration phase: Elapsed time ==> 1s.124ms
 <CYPRESSTAG name="HDL generation results...">
 </CYPRESSTAG>
 HDL generation phase: Elapsed time ==> 0s.037ms
@@ -41,7 +41,7 @@ Options  :    -yv2 -q10 -ygs -o2 -v3 -.fftcfgtype=LE -ya -.fftprj=C:\Users\dgita
 ======================================================================
 
 vlogfe V6.3 IR 41:  Verilog parser
-Wed Apr 04 14:03:43 2018
+Thu Apr 05 19:35:05 2018
 
 
 ======================================================================
@@ -51,7 +51,7 @@ Options  :    -yv2 -q10 SpeedControl.v
 ======================================================================
 
 vpp V6.3 IR 41:  Verilog Pre-Processor
-Wed Apr 04 14:03:43 2018
+Thu Apr 05 19:35:05 2018
 
 Flattening file 'C:\Program Files (x86)\Cypress\PSoC Creator\4.1\PSoC Creator\psoc\content\CyComponentLibrary\CyComponentLibrary.cylib\B_PWM_v3_30\B_PWM_v3_30.v'
 Flattening file 'C:\Program Files (x86)\Cypress\PSoC Creator\4.1\PSoC Creator\warp\lib\common\cypress.v'
@@ -96,7 +96,7 @@ Options  :    -yv2 -q10 -ygs -o2 -v3 -.fftcfgtype=LE -ya -.fftprj=C:\Users\dgita
 ======================================================================
 
 tovif V6.3 IR 41:  High-level synthesis
-Wed Apr 04 14:03:43 2018
+Thu Apr 05 19:35:05 2018
 
 Linking 'C:\Program Files (x86)\Cypress\PSoC Creator\4.1\PSoC Creator\warp\lib\common\std.vhd'.
 Linking 'C:\Program Files (x86)\Cypress\PSoC Creator\4.1\PSoC Creator\warp\lib\common\cypress.vhd'.
@@ -132,7 +132,7 @@ Options  :    -yv2 -q10 -ygs -o2 -v3 -.fftcfgtype=LE -ya -.fftprj=C:\Users\dgita
 ======================================================================
 
 topld V6.3 IR 41:  Synthesis and optimization
-Wed Apr 04 14:03:44 2018
+Thu Apr 05 19:35:06 2018
 
 Linking 'C:\Program Files (x86)\Cypress\PSoC Creator\4.1\PSoC Creator\warp\lib\common\std.vhd'.
 Linking 'C:\Program Files (x86)\Cypress\PSoC Creator\4.1\PSoC Creator\warp\lib\common\cypress.vhd'.
@@ -349,8 +349,8 @@ Detecting unused logic.
 	\PWM_Steering:PWMUDB:dith_sel\
 	\PWM_Steering:PWMUDB:compare2\
 	\PWM_Steering:Net_101\
-	Net_122
-	Net_123
+	Net_589
+	Net_590
 	\PWM_Steering:PWMUDB:MODULE_4:b_31\
 	\PWM_Steering:PWMUDB:MODULE_4:b_30\
 	\PWM_Steering:PWMUDB:MODULE_4:b_29\
@@ -460,12 +460,12 @@ Detecting unused logic.
 	\PWM_Steering:PWMUDB:MODULE_4:g2:a0:g1:z1:s0:g1:u0:c_27\
 	\PWM_Steering:PWMUDB:MODULE_4:g2:a0:g1:z1:s0:g1:u0:c_26\
 	\PWM_Steering:PWMUDB:MODULE_4:g2:a0:g1:z1:s0:g1:u0:c_25\
-	Net_124
-	Net_121
+	Net_591
+	Net_588
 	\PWM_Steering:Net_113\
 	\PWM_Steering:Net_107\
 	\PWM_Steering:Net_114\
-	Net_166
+	Net_408
 	\Composite_Sync_Counter:Net_49\
 	\Composite_Sync_Counter:Net_82\
 	\Composite_Sync_Counter:Net_91\
@@ -473,8 +473,8 @@ Detecting unused logic.
 	\Composite_Sync_Counter:CounterUDB:ctrl_cmod_2\
 	\Composite_Sync_Counter:CounterUDB:ctrl_cmod_1\
 	\Composite_Sync_Counter:CounterUDB:ctrl_cmod_0\
-	Net_167
-	Net_204
+	Net_409
+	Net_545
 	\Comparator_Counter:Net_49\
 	\Comparator_Counter:Net_82\
 	\Comparator_Counter:Net_91\
@@ -482,7 +482,7 @@ Detecting unused logic.
 	\Comparator_Counter:CounterUDB:ctrl_cmod_2\
 	\Comparator_Counter:CounterUDB:ctrl_cmod_1\
 	\Comparator_Counter:CounterUDB:ctrl_cmod_0\
-	Net_205
+	Net_546
 	Net_183
 	\Vertical_Sync_Counter:Net_49\
 	\Vertical_Sync_Counter:Net_82\
@@ -921,7 +921,7 @@ Removing Lhs of wire \PWM_Steering:PWMUDB:MODULE_4:g2:a0:g1:z1:s0:g1:u0:c_0\[908
 Removing Lhs of wire \PWM_Steering:PWMUDB:MODULE_4:g2:a0:g1:z1:s0:g1:u0:b_0\[909] = one[24]
 Removing Rhs of wire Net_137[910] = \PWM_Steering:Net_96\[707]
 Removing Lhs of wire tmpOE__MOSFET_Steering_net_0[918] = one[24]
-Removing Rhs of wire Net_193[923] = \Composite_Sync_Counter:Net_43\[924]
+Removing Rhs of wire Net_407[923] = \Composite_Sync_Counter:Net_43\[924]
 Removing Lhs of wire \Composite_Sync_Counter:Net_89\[928] = zero[8]
 Removing Lhs of wire \Composite_Sync_Counter:Net_95\[929] = zero[8]
 Removing Lhs of wire \Composite_Sync_Counter:CounterUDB:ctrl_capmode_1\[938] = zero[8]
@@ -1399,14 +1399,14 @@ CYPRESS_DIR    : C:\Program Files (x86)\Cypress\PSoC Creator\4.1\PSoC Creator\wa
 Warp Program   : C:\Program Files (x86)\Cypress\PSoC Creator\4.1\PSoC Creator\warp\bin\warp.exe
 Warp Arguments : -yv2 -q10 -ygs -o2 -v3 -.fftcfgtype=LE -ya "-.fftprj=C:\Users\dgitau\PSoC Creator\car_lab_ele_302-navigation\SpeedControl.cydsn\SpeedControl.cyprj" -dcpsoc3 SpeedControl.v -verilog
 </CYPRESSTAG>
-Warp synthesis phase: Elapsed time ==> 1s.788ms
+Warp synthesis phase: Elapsed time ==> 2s.285ms
 <CYPRESSTAG name="Fitter results...">
 <CYPRESSTAG name="Fitter startup details...">
-cyp3fit: V4.1.0.3210, Family: PSoC3, Started at: Wednesday, 04 April 2018 14:03:45
+cyp3fit: V4.1.0.3210, Family: PSoC3, Started at: Thursday, 05 April 2018 19:35:07
 Options: -yv2 -q10 -ygs -o2 -v3 -.fftcfgtype=LE -ya -.fftprj=C:\Users\dgitau\PSoC Creator\car_lab_ele_302-navigation\SpeedControl.cydsn\SpeedControl.cyprj -d CY8C5868AXI-LP035 SpeedControl.v -verilog
 </CYPRESSTAG>
 <CYPRESSTAG name="Design parsing">
-Design parsing phase: Elapsed time ==> 0s.019ms
+Design parsing phase: Elapsed time ==> 0s.017ms
 </CYPRESSTAG>
 <CYPRESSTAG name="Tech Mapping">
 <CYPRESSTAG name="Initial Mapping" icon="FILE_RPT_TECHM">
@@ -1437,7 +1437,7 @@ Design parsing phase: Elapsed time ==> 0s.019ms
     Digital Clock 2: Automatic-assigning  clock 'Clock_2'. Fanout=2, Signal=Net_95
     Digital Clock 3: Automatic-assigning  clock 'Clock_5'. Fanout=2, Signal=Net_180
     Digital Clock 4: Automatic-assigning  clock 'Clock_1'. Fanout=1, Signal=Net_21
-    Digital Clock 5: Automatic-assigning  clock 'Clock_Steering'. Fanout=1, Signal=Net_120
+    Digital Clock 5: Automatic-assigning  clock 'Clock_Steering'. Fanout=1, Signal=Net_271
 </CYPRESSTAG>
 
 Removing unused cells resulting from optimization
@@ -2402,7 +2402,7 @@ Design Equations
         Total # of inputs        : 1
         Total # of product terms : 1
         List of special equations: 
-            Clock  = (Net_120) => Global
+            Clock  = (Net_271) => Global
             Clock Enable: True
         Main Equation            : 1 pterm
         (
@@ -2414,7 +2414,7 @@ Design Equations
         Total # of inputs        : 1
         Total # of product terms : 1
         List of special equations: 
-            Clock  = (Net_120) => Global
+            Clock  = (Net_271) => Global
             Clock Enable: True
         Main Equation            : 1 pterm
         (
@@ -2426,7 +2426,7 @@ Design Equations
         Total # of inputs        : 2
         Total # of product terms : 1
         List of special equations: 
-            Clock  = (Net_120) => Global
+            Clock  = (Net_271) => Global
             Clock Enable: True
         Main Equation            : 1 pterm
         (
@@ -2439,7 +2439,7 @@ Design Equations
         Total # of inputs        : 2
         Total # of product terms : 1
         List of special equations: 
-            Clock  = (Net_120) => Global
+            Clock  = (Net_271) => Global
             Clock Enable: True
         Main Equation            : 1 pterm
         (
@@ -2672,7 +2672,7 @@ Design Equations
 
     datapathcell: Name =\PWM_Steering:PWMUDB:sP8:pwmdp:u0\
         PORT MAP (
-            clock => Net_120 ,
+            clock => Net_271 ,
             cs_addr_2 => \PWM_Steering:PWMUDB:tc_i\ ,
             cs_addr_1 => \PWM_Steering:PWMUDB:runmode_enable\ ,
             cl0_comb => \PWM_Steering:PWMUDB:cmp1_less\ ,
@@ -2857,7 +2857,7 @@ Design Equations
 
     statusicell: Name =\PWM_Steering:PWMUDB:genblk8:stsreg\
         PORT MAP (
-            clock => Net_120 ,
+            clock => Net_271 ,
             status_3 => \PWM_Steering:PWMUDB:status_3\ ,
             status_2 => \PWM_Steering:PWMUDB:status_2\ ,
             status_0 => \PWM_Steering:PWMUDB:status_0\ );
@@ -2879,7 +2879,7 @@ Design Equations
             status_3 => \Composite_Sync_Counter:CounterUDB:status_3\ ,
             status_1 => \Composite_Sync_Counter:CounterUDB:reload\ ,
             status_0 => \Composite_Sync_Counter:CounterUDB:status_0\ ,
-            interrupt => Net_193 );
+            interrupt => Net_407 );
         Properties:
         {
             cy_force_order = 1
@@ -2981,7 +2981,7 @@ Design Equations
 
     controlcell: Name =\PWM_Steering:PWMUDB:genblk1:ctrlreg\
         PORT MAP (
-            clock => Net_120 ,
+            clock => Net_271 ,
             control_7 => \PWM_Steering:PWMUDB:control_7\ ,
             control_6 => \PWM_Steering:PWMUDB:control_6\ ,
             control_5 => \PWM_Steering:PWMUDB:control_5\ ,
@@ -3088,7 +3088,7 @@ Design Equations
 
     interrupt: Name =Composite_Sync_Interrupt
         PORT MAP (
-            interrupt => Net_193 );
+            interrupt => Net_407 );
         Properties:
         {
             int_type = "00"
@@ -3152,8 +3152,8 @@ Analog (SC/CT) Blocks         :    0 :    4 :    4 :  0.00 %
 DAC                           :      :      :      :        
   VIDAC                       :    0 :    4 :    4 :  0.00 %
 </CYPRESSTAG>
-Technology Mapping: Elapsed time ==> 0s.112ms
-Tech Mapping phase: Elapsed time ==> 0s.159ms
+Technology Mapping: Elapsed time ==> 0s.079ms
+Tech Mapping phase: Elapsed time ==> 0s.136ms
 </CYPRESSTAG>
 <CYPRESSTAG name="Analog Placement">
 Initial Analog Placement Results:
@@ -3167,7 +3167,7 @@ IO_4@[IOP=(2)][IoId=(4)] : \LCD:LCDPort(4)\ (fixed)
 IO_5@[IOP=(2)][IoId=(5)] : \LCD:LCDPort(5)\ (fixed)
 IO_6@[IOP=(2)][IoId=(6)] : \LCD:LCDPort(6)\ (fixed)
 IO_6@[IOP=(0)][IoId=(6)] : hall_effect_sensor(0) (fixed)
-Analog Placement phase: Elapsed time ==> 0s.017ms
+Analog Placement phase: Elapsed time ==> 0s.026ms
 </CYPRESSTAG>
 <CYPRESSTAG name="Analog Routing">
 Analog Routing phase: Elapsed time ==> 0s.000ms
@@ -3185,7 +3185,7 @@ Dump of CyP35AnalogRoutingResultsDB
 IsVddaHalfUsedForComp = False
 IsVddaHalfUsedForSar0 = False
 IsVddaHalfUsedForSar1 = False
-Analog Code Generation phase: Elapsed time ==> 0s.215ms
+Analog Code Generation phase: Elapsed time ==> 0s.217ms
 </CYPRESSTAG>
 <CYPRESSTAG name="Digital Placement">
 <CYPRESSTAG name="Detailed placement messages">
@@ -3220,7 +3220,7 @@ PLD Packing: Elapsed time ==> 0s.002ms
 Initial Partitioning Summary not displayed at this verbose level.</CYPRESSTAG>
 <CYPRESSTAG name="Final Partitioning Summary">
 Final Partitioning Summary not displayed at this verbose level.</CYPRESSTAG>
-Partitioning: Elapsed time ==> 0s.042ms
+Partitioning: Elapsed time ==> 0s.040ms
 </CYPRESSTAG>
 <CYPRESSTAG name="Final Placement Summary">
 
@@ -3257,7 +3257,7 @@ LAB@[UDB=(2,1)][LB=0] #macrocells=4, #inputs=4, #pterms=4
         Total # of inputs        : 2
         Total # of product terms : 1
         List of special equations: 
-            Clock  = (Net_120) => Global
+            Clock  = (Net_271) => Global
             Clock Enable: True
         Main Equation            : 1 pterm
         (
@@ -3273,7 +3273,7 @@ LAB@[UDB=(2,1)][LB=0] #macrocells=4, #inputs=4, #pterms=4
         Total # of inputs        : 1
         Total # of product terms : 1
         List of special equations: 
-            Clock  = (Net_120) => Global
+            Clock  = (Net_271) => Global
             Clock Enable: True
         Main Equation            : 1 pterm
         (
@@ -3302,7 +3302,7 @@ LAB@[UDB=(2,1)][LB=0] #macrocells=4, #inputs=4, #pterms=4
         Total # of inputs        : 1
         Total # of product terms : 1
         List of special equations: 
-            Clock  = (Net_120) => Global
+            Clock  = (Net_271) => Global
             Clock Enable: True
         Main Equation            : 1 pterm
         (
@@ -3320,7 +3320,7 @@ LAB@[UDB=(2,1)][LB=1] #macrocells=1, #inputs=2, #pterms=1
         Total # of inputs        : 2
         Total # of product terms : 1
         List of special equations: 
-            Clock  = (Net_120) => Global
+            Clock  = (Net_271) => Global
             Clock Enable: True
         Main Equation            : 1 pterm
         (
@@ -3339,7 +3339,7 @@ LAB@[UDB=(2,1)][LB=1] #macrocells=1, #inputs=2, #pterms=1
 
 datapathcell: Name =\PWM_Steering:PWMUDB:sP8:pwmdp:u0\
     PORT MAP (
-        clock => Net_120 ,
+        clock => Net_271 ,
         cs_addr_2 => \PWM_Steering:PWMUDB:tc_i\ ,
         cs_addr_1 => \PWM_Steering:PWMUDB:runmode_enable\ ,
         cl0_comb => \PWM_Steering:PWMUDB:cmp1_less\ ,
@@ -3374,7 +3374,7 @@ datapathcell: Name =\PWM_Steering:PWMUDB:sP8:pwmdp:u0\
 
 statusicell: Name =\PWM_Steering:PWMUDB:genblk8:stsreg\
     PORT MAP (
-        clock => Net_120 ,
+        clock => Net_271 ,
         status_3 => \PWM_Steering:PWMUDB:status_3\ ,
         status_2 => \PWM_Steering:PWMUDB:status_2\ ,
         status_0 => \PWM_Steering:PWMUDB:status_0\ );
@@ -3389,7 +3389,7 @@ statusicell: Name =\PWM_Steering:PWMUDB:genblk8:stsreg\
 
 controlcell: Name =\PWM_Steering:PWMUDB:genblk1:ctrlreg\
     PORT MAP (
-        clock => Net_120 ,
+        clock => Net_271 ,
         control_7 => \PWM_Steering:PWMUDB:control_7\ ,
         control_6 => \PWM_Steering:PWMUDB:control_6\ ,
         control_5 => \PWM_Steering:PWMUDB:control_5\ ,
@@ -3614,7 +3614,7 @@ statusicell: Name =\Composite_Sync_Counter:CounterUDB:sSTSReg:stsreg\
         status_3 => \Composite_Sync_Counter:CounterUDB:status_3\ ,
         status_1 => \Composite_Sync_Counter:CounterUDB:reload\ ,
         status_0 => \Composite_Sync_Counter:CounterUDB:status_0\ ,
-        interrupt => Net_193 );
+        interrupt => Net_407 );
     Properties:
     {
         cy_force_order = 1
@@ -4390,7 +4390,7 @@ Intr container @ [IntrContainer=(0)]:
   Intr@ [IntrContainer=(0)][IntrId=(1)] 
     interrupt: Name =Composite_Sync_Interrupt
         PORT MAP (
-            interrupt => Net_193 );
+            interrupt => Net_407 );
         Properties:
         {
             int_type = "00"
@@ -5020,8 +5020,8 @@ Clock group 0:
             dclk_3 => Net_180_local ,
             dclk_glb_4 => Net_21 ,
             dclk_4 => Net_21_local ,
-            dclk_glb_5 => Net_120 ,
-            dclk_5 => Net_120_local );
+            dclk_glb_5 => Net_271 ,
+            dclk_5 => Net_271_local );
         Properties:
         {
         }
@@ -5080,32 +5080,32 @@ Port | Pin | Fixed |      Type |       Drive Mode |                       Name |
 </CYPRESSTAG>
 </CYPRESSTAG>
 Digital component placer commit/Report: Elapsed time ==> 0s.029ms
-Digital Placement phase: Elapsed time ==> 1s.129ms
+Digital Placement phase: Elapsed time ==> 1s.256ms
 </CYPRESSTAG>
 <CYPRESSTAG name="Digital Routing">
 "C:\Program Files (x86)\Cypress\PSoC Creator\4.1\PSoC Creator\bin/sjrouter.exe" --xml-path "C:\Program Files (x86)\Cypress\PSoC Creator\4.1\PSoC Creator\dev\psoc5/psoc5lp/route_arch-rrg.cydata" --vh2-path "SpeedControl_r.vh2" --pcf-path "SpeedControl.pco" --des-name "SpeedControl" --dsf-path "SpeedControl.dsf" --sdc-path "SpeedControl.sdc" --lib-path "SpeedControl_r.lib"
 Routing successful.
-Digital Routing phase: Elapsed time ==> 1s.157ms
+Digital Routing phase: Elapsed time ==> 1s.238ms
 </CYPRESSTAG>
 <CYPRESSTAG name="Bitstream Generation">
-Bitstream Generation phase: Elapsed time ==> 0s.135ms
+Bitstream Generation phase: Elapsed time ==> 0s.137ms
 </CYPRESSTAG>
 <CYPRESSTAG name="Bitstream Verification">
-Bitstream Verification phase: Elapsed time ==> 0s.027ms
+Bitstream Verification phase: Elapsed time ==> 0s.031ms
 </CYPRESSTAG>
 <CYPRESSTAG name="Static timing analysis">
 Timing report is in SpeedControl_timing.html.
-Static timing analysis phase: Elapsed time ==> 0s.325ms
+Static timing analysis phase: Elapsed time ==> 0s.429ms
 </CYPRESSTAG>
 <CYPRESSTAG name="Data reporting">
-Data reporting phase: Elapsed time ==> 0s.001ms
+Data reporting phase: Elapsed time ==> 0s.000ms
 </CYPRESSTAG>
 <CYPRESSTAG name="Database update...">
-Design database save phase: Elapsed time ==> 0s.151ms
+Design database save phase: Elapsed time ==> 0s.150ms
 </CYPRESSTAG>
-cydsfit: Elapsed time ==> 3s.368ms
+cydsfit: Elapsed time ==> 3s.674ms
 </CYPRESSTAG>
-Fitter phase: Elapsed time ==> 3s.369ms
-API generation phase: Elapsed time ==> 1s.101ms
-Dependency generation phase: Elapsed time ==> 0s.008ms
+Fitter phase: Elapsed time ==> 3s.674ms
+API generation phase: Elapsed time ==> 1s.276ms
+Dependency generation phase: Elapsed time ==> 0s.007ms
 Cleanup phase: Elapsed time ==> 0s.001ms

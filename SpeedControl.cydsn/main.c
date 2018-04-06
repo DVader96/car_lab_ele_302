@@ -60,12 +60,15 @@ CY_ISR(vertical_sync_inter) {
  */
 CY_ISR(composite_sync_inter) {
     if (count_up_to_ith_line_flag) {
-        
+        current_line_number += 1;
     }
 }
 
 /* */
 CY_ISR(comparator_inter) {
+    if (current_line_number == ith_line) {
+        
+    }
 }
 
 int main(void) {

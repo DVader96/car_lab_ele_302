@@ -1,6 +1,6 @@
 // ======================================================================
 // SpeedControl.v generated from TopDesign.cysch
-// 04/04/2018 at 14:03
+// 04/05/2018 at 19:35
 // This file is auto generated. ANY EDITS YOU MAKE MAY BE LOST WHEN THIS FILE IS REGENERATED!!!
 // ======================================================================
 
@@ -850,36 +850,35 @@ module top ;
           wire  Net_184;
           wire  Net_183;
           wire  Net_192;
-          wire  Net_213;
-          wire  Net_211;
-          wire  Net_210;
-          wire  Net_209;
-          wire  Net_207;
-          wire  Net_206;
-          wire  Net_205;
-          wire  Net_204;
-          wire  Net_157;
-          wire  Net_174;
-          wire  Net_173;
-          wire  Net_172;
-          wire  Net_170;
-          wire  Net_193;
-          wire  Net_167;
-          wire  Net_166;
-          wire  Net_136;
-          wire  Net_132;
-          wire  Net_131;
-          wire  Net_129;
-          wire  Net_128;
-          wire  Net_127;
-          wire  Net_126;
-          wire  Net_125;
-          wire  Net_124;
-          wire  Net_123;
-          wire  Net_122;
-          wire  Net_121;
-          wire  Net_120;
-          wire  Net_119;
+          wire  Net_520;
+          wire  Net_550;
+          wire  Net_549;
+          wire  Net_548;
+          wire  Net_547;
+          wire  Net_546;
+          wire  Net_545;
+          wire  Net_414;
+          wire  Net_413;
+          wire  Net_412;
+          wire  Net_411;
+          wire  Net_410;
+          wire  Net_407;
+          wire  Net_409;
+          wire  Net_408;
+          wire  Net_272;
+          wire  Net_598;
+          wire  Net_597;
+          wire  Net_596;
+          wire  Net_595;
+          wire  Net_594;
+          wire  Net_593;
+          wire  Net_592;
+          wire  Net_591;
+          wire  Net_590;
+          wire  Net_589;
+          wire  Net_588;
+          wire  Net_271;
+          wire  Net_587;
           wire  Net_99;
           wire  Net_44;
           wire  Net_43;
@@ -899,15 +898,16 @@ module top ;
           wire  Net_23;
           wire  Net_22;
           wire  Net_20;
-          wire  Net_187;
-          wire  Net_171;
-          wire  Net_208;
           wire  Net_203;
           wire  Net_201;
-          wire  Net_182;
-          wire  Net_180;
-          wire  Net_138;
+          wire  Net_206;
+          wire  Net_208;
           wire  Net_145;
+          wire  Net_138;
+          wire  Net_171;
+          wire  Net_180;
+          wire  Net_182;
+          wire  Net_187;
           wire  Net_137;
           wire  Net_5;
           wire  Net_21;
@@ -1211,19 +1211,19 @@ module top ;
 
     PWM_v3_30_3 PWM_Steering (
         .reset(1'b0),
-        .clock(Net_120),
-        .tc(Net_121),
-        .pwm1(Net_122),
-        .pwm2(Net_123),
-        .interrupt(Net_124),
+        .clock(Net_271),
+        .tc(Net_588),
+        .pwm1(Net_589),
+        .pwm2(Net_590),
+        .interrupt(Net_591),
         .capture(1'b0),
         .kill(1'b1),
         .enable(1'b1),
         .trigger(1'b0),
         .cmp_sel(1'b0),
         .pwm(Net_137),
-        .ph1(Net_131),
-        .ph2(Net_132));
+        .ph1(Net_597),
+        .ph2(Net_598));
     defparam PWM_Steering.Resolution = 8;
 
 
@@ -1235,7 +1235,7 @@ module top ;
 		  .is_direct(0),
 		  .is_digital(1))
 		Clock_Steering
-		 (.clock_out(Net_120));
+		 (.clock_out(Net_271));
 
 
 	wire [0:0] tmpOE__MOSFET_Steering_net;
@@ -1315,10 +1315,10 @@ module top ;
 
     Counter_v3_0_4 Composite_Sync_Counter (
         .reset(Net_138),
-        .tc(Net_166),
-        .comp(Net_167),
+        .tc(Net_408),
+        .comp(Net_409),
         .clock(Net_145),
-        .interrupt(Net_193),
+        .interrupt(Net_407),
         .enable(1'b0),
         .capture(Net_171),
         .upCnt(1'b0),
@@ -1432,8 +1432,8 @@ module top ;
 
     Counter_v3_0_5 Comparator_Counter (
         .reset(Net_203),
-        .tc(Net_204),
-        .comp(Net_205),
+        .tc(Net_545),
+        .comp(Net_546),
         .clock(Net_201),
         .interrupt(Net_206),
         .enable(1'b0),
@@ -1545,7 +1545,7 @@ module top ;
 	cy_isr_v1_0
 		#(.int_type(2'b00))
 		Composite_Sync_Interrupt
-		 (.int_signal(Net_193));
+		 (.int_signal(Net_407));
 
 
 
