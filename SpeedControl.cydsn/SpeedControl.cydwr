@@ -250,7 +250,13 @@
   <Data key="DataVersionKey" value="2" />
   <Group key="DWRInstGuidMapping">
     <Group key="Pin">
+      <Data key="2acff54d-c2b6-40df-84ad-8c15c2d819ec" value="from_composite_sync_out" />
+      <Data key="3dba336a-f6a5-43fb-aed3-de1e0b7bf362" value="Pin_1" />
+      <Data key="7ee046b7-224e-438a-ae1d-a2bf17808edd" value="from_vertical_sync_out" />
       <Data key="8d318d8b-cf7b-4b6b-b02c-ab1c5c49d0ba" value="Pin_1" />
+      <Data key="9d5d984e-59a4-401d-a472-01a0a096ed50" value="from_comparator" />
+      <Data key="086dd325-012e-4ecd-ad50-9054ad0b6d67" value="MOSFET_Steering" />
+      <Data key="511dff9a-06f6-424f-af0f-438075588958" value="Pin_2" />
       <Data key="279932cd-8b0d-4421-9a43-1b6fc9dcf147" value="Hall_Effect_LED" />
       <Data key="763553c7-8e0d-4d59-96ef-3ba65af583da" value="Time_Reset" />
       <Data key="a04e7aa5-0799-4619-86fc-1172c54f6a3a" value="hall_effect_sensor" />
@@ -3342,9 +3348,39 @@
     </Group>
   </Group>
   <Group key="Pin2">
+    <Group key="2acff54d-c2b6-40df-84ad-8c15c2d819ec">
+      <Group key="0">
+        <Data key="Port Format" value="4,6" />
+      </Group>
+    </Group>
+    <Group key="3dba336a-f6a5-43fb-aed3-de1e0b7bf362">
+      <Group key="0">
+        <Data key="Port Format" value="0,6" />
+      </Group>
+    </Group>
+    <Group key="7ee046b7-224e-438a-ae1d-a2bf17808edd">
+      <Group key="0">
+        <Data key="Port Format" value="0,4" />
+      </Group>
+    </Group>
     <Group key="8d318d8b-cf7b-4b6b-b02c-ab1c5c49d0ba">
       <Group key="0">
         <Data key="Port Format" value="0,6" />
+      </Group>
+    </Group>
+    <Group key="9d5d984e-59a4-401d-a472-01a0a096ed50">
+      <Group key="0">
+        <Data key="Port Format" value="4,2" />
+      </Group>
+    </Group>
+    <Group key="086dd325-012e-4ecd-ad50-9054ad0b6d67">
+      <Group key="0">
+        <Data key="Port Format" value="4,4" />
+      </Group>
+    </Group>
+    <Group key="511dff9a-06f6-424f-af0f-438075588958">
+      <Group key="0">
+        <Data key="Port Format" value="3,4" />
       </Group>
     </Group>
     <Group key="279932cd-8b0d-4421-9a43-1b6fc9dcf147">
@@ -3359,7 +3395,7 @@
     </Group>
     <Group key="a04e7aa5-0799-4619-86fc-1172c54f6a3a">
       <Group key="0">
-        <Data key="Port Format" value="0,6" />
+        <Data key="Port Format" value="0,7" />
       </Group>
     </Group>
     <Group key="e851a3b9-efb8-48be-bbb8-b303b216c393">

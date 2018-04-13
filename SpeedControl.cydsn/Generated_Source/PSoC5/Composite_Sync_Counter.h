@@ -155,24 +155,24 @@ void Composite_Sync_Counter_Wakeup(void)        ;
 /***************************************
  *  Initialization Values
  **************************************/
-#define Composite_Sync_Counter_CAPTURE_MODE_CONF       1u
+#define Composite_Sync_Counter_CAPTURE_MODE_CONF       0u
 #define Composite_Sync_Counter_INIT_PERIOD_VALUE       255u
 #define Composite_Sync_Counter_INIT_COUNTER_VALUE      255u
 #if (Composite_Sync_Counter_UsingFixedFunction)
 #define Composite_Sync_Counter_INIT_INTERRUPTS_MASK    ((uint8)((uint8)0u << Composite_Sync_Counter_STATUS_ZERO_INT_EN_MASK_SHIFT))
 #else
-#define Composite_Sync_Counter_INIT_COMPARE_VALUE      128u
+#define Composite_Sync_Counter_INIT_COMPARE_VALUE      125u
 #define Composite_Sync_Counter_INIT_INTERRUPTS_MASK ((uint8)((uint8)0u << Composite_Sync_Counter_STATUS_ZERO_INT_EN_MASK_SHIFT) | \
         ((uint8)((uint8)0u << Composite_Sync_Counter_STATUS_CAPTURE_INT_EN_MASK_SHIFT)) | \
         ((uint8)((uint8)0u << Composite_Sync_Counter_STATUS_CMP_INT_EN_MASK_SHIFT)) | \
         ((uint8)((uint8)0u << Composite_Sync_Counter_STATUS_OVERFLOW_INT_EN_MASK_SHIFT)) | \
         ((uint8)((uint8)0u << Composite_Sync_Counter_STATUS_UNDERFLOW_INT_EN_MASK_SHIFT)))
-#define Composite_Sync_Counter_DEFAULT_COMPARE_MODE    1u
+#define Composite_Sync_Counter_DEFAULT_COMPARE_MODE    0u
 
 #if( 0 != Composite_Sync_Counter_CAPTURE_MODE_CONF)
-    #define Composite_Sync_Counter_DEFAULT_CAPTURE_MODE    ((uint8)((uint8)1u << Composite_Sync_Counter_CTRL_CAPMODE0_SHIFT))
+    #define Composite_Sync_Counter_DEFAULT_CAPTURE_MODE    ((uint8)((uint8)0u << Composite_Sync_Counter_CTRL_CAPMODE0_SHIFT))
 #else    
-    #define Composite_Sync_Counter_DEFAULT_CAPTURE_MODE    (1u )
+    #define Composite_Sync_Counter_DEFAULT_CAPTURE_MODE    (0u )
 #endif /* ( 0 != Composite_Sync_Counter_CAPTURE_MODE_CONF) */
 
 #endif /* (Composite_Sync_Counter_UsingFixedFunction) */

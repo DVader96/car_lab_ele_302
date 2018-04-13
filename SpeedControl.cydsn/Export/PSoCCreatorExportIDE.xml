@@ -116,6 +116,9 @@
           <File BuildType="BUILD" Toolchain="">Generated_Source\PSoC5\Magnet_Interrupt.h</File>
           <File BuildType="BUILD" Toolchain="">Generated_Source\PSoC5\Clock_2.c</File>
           <File BuildType="BUILD" Toolchain="">Generated_Source\PSoC5\Clock_2.h</File>
+          <File BuildType="BUILD" Toolchain="">Generated_Source\PSoC5\Pin_1_aliases.h</File>
+          <File BuildType="BUILD" Toolchain="">Generated_Source\PSoC5\Pin_1.c</File>
+          <File BuildType="BUILD" Toolchain="">Generated_Source\PSoC5\Pin_1.h</File>
           <File BuildType="BUILD" Toolchain="">Generated_Source\PSoC5\PWM_Steering.c</File>
           <File BuildType="BUILD" Toolchain="">Generated_Source\PSoC5\PWM_Steering.h</File>
           <File BuildType="BUILD" Toolchain="">Generated_Source\PSoC5\PWM_Steering_PM.c</File>
@@ -130,30 +133,27 @@
           <File BuildType="BUILD" Toolchain="">Generated_Source\PSoC5\from_comparator_aliases.h</File>
           <File BuildType="BUILD" Toolchain="">Generated_Source\PSoC5\from_comparator.c</File>
           <File BuildType="BUILD" Toolchain="">Generated_Source\PSoC5\from_comparator.h</File>
-          <File BuildType="BUILD" Toolchain="">Generated_Source\PSoC5\Clock_3.c</File>
-          <File BuildType="BUILD" Toolchain="">Generated_Source\PSoC5\Clock_3.h</File>
-          <File BuildType="BUILD" Toolchain="">Generated_Source\PSoC5\Comparator_Counter.c</File>
-          <File BuildType="BUILD" Toolchain="">Generated_Source\PSoC5\Comparator_Counter.h</File>
-          <File BuildType="BUILD" Toolchain="">Generated_Source\PSoC5\Comparator_Counter_PM.c</File>
-          <File BuildType="BUILD" Toolchain="">Generated_Source\PSoC5\Clock_4.c</File>
-          <File BuildType="BUILD" Toolchain="">Generated_Source\PSoC5\Clock_4.h</File>
           <File BuildType="BUILD" Toolchain="">Generated_Source\PSoC5\from_composite_sync_out_aliases.h</File>
           <File BuildType="BUILD" Toolchain="">Generated_Source\PSoC5\from_composite_sync_out.c</File>
           <File BuildType="BUILD" Toolchain="">Generated_Source\PSoC5\from_composite_sync_out.h</File>
           <File BuildType="BUILD" Toolchain="">Generated_Source\PSoC5\Composite_Sync_Interrupt.c</File>
           <File BuildType="BUILD" Toolchain="">Generated_Source\PSoC5\Composite_Sync_Interrupt.h</File>
-          <File BuildType="BUILD" Toolchain="">Generated_Source\PSoC5\Clock_5.c</File>
-          <File BuildType="BUILD" Toolchain="">Generated_Source\PSoC5\Clock_5.h</File>
-          <File BuildType="BUILD" Toolchain="">Generated_Source\PSoC5\Vertical_Sync_Counter.c</File>
-          <File BuildType="BUILD" Toolchain="">Generated_Source\PSoC5\Vertical_Sync_Counter.h</File>
-          <File BuildType="BUILD" Toolchain="">Generated_Source\PSoC5\Vertical_Sync_Counter_PM.c</File>
           <File BuildType="BUILD" Toolchain="">Generated_Source\PSoC5\from_vertical_sync_out_aliases.h</File>
           <File BuildType="BUILD" Toolchain="">Generated_Source\PSoC5\from_vertical_sync_out.c</File>
           <File BuildType="BUILD" Toolchain="">Generated_Source\PSoC5\from_vertical_sync_out.h</File>
-          <File BuildType="BUILD" Toolchain="">Generated_Source\PSoC5\Vertical_Sync_Interrupt.c</File>
-          <File BuildType="BUILD" Toolchain="">Generated_Source\PSoC5\Vertical_Sync_Interrupt.h</File>
           <File BuildType="BUILD" Toolchain="">Generated_Source\PSoC5\Comparator_Interrupt.c</File>
           <File BuildType="BUILD" Toolchain="">Generated_Source\PSoC5\Comparator_Interrupt.h</File>
+          <File BuildType="BUILD" Toolchain="">Generated_Source\PSoC5\Timer_1.c</File>
+          <File BuildType="BUILD" Toolchain="">Generated_Source\PSoC5\Timer_1.h</File>
+          <File BuildType="BUILD" Toolchain="">Generated_Source\PSoC5\Timer_1_PM.c</File>
+          <File BuildType="BUILD" Toolchain="">Generated_Source\PSoC5\Clock_6.c</File>
+          <File BuildType="BUILD" Toolchain="">Generated_Source\PSoC5\Clock_6.h</File>
+          <File BuildType="BUILD" Toolchain="">Generated_Source\PSoC5\Pin_2_aliases.h</File>
+          <File BuildType="BUILD" Toolchain="">Generated_Source\PSoC5\Pin_2.c</File>
+          <File BuildType="BUILD" Toolchain="">Generated_Source\PSoC5\Pin_2.h</File>
+          <File BuildType="BUILD" Toolchain="">Generated_Source\PSoC5\Timer_2.c</File>
+          <File BuildType="BUILD" Toolchain="">Generated_Source\PSoC5\Timer_2.h</File>
+          <File BuildType="BUILD" Toolchain="">Generated_Source\PSoC5\Timer_2_PM.c</File>
         </Files>
       </Folder>
       <Folder BuildType="STRICT" Path="C:\Users\dgitau\PSoC Creator\car_lab_ele_302-navigation\SpeedControl.cydsn\Export\ARM_GCC_Generic">

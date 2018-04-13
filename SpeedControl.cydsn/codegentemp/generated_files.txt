@@ -56,30 +56,30 @@
   <file name="C:\Users\dgitau\PSoC Creator\car_lab_ele_302-navigation\SpeedControl.cydsn\codegentemp\from_comparator_aliases.h" value="HEADER;;;;;from_comparator" />
   <file name="C:\Users\dgitau\PSoC Creator\car_lab_ele_302-navigation\SpeedControl.cydsn\codegentemp\from_comparator.c" value="SOURCE_C;CortexM3;;;;from_comparator" />
   <file name="C:\Users\dgitau\PSoC Creator\car_lab_ele_302-navigation\SpeedControl.cydsn\codegentemp\from_comparator.h" value="HEADER;;;;;from_comparator" />
-  <file name="C:\Users\dgitau\PSoC Creator\car_lab_ele_302-navigation\SpeedControl.cydsn\codegentemp\Clock_3.c" value="SOURCE_C;CortexM3;;;;Clock_3" />
-  <file name="C:\Users\dgitau\PSoC Creator\car_lab_ele_302-navigation\SpeedControl.cydsn\codegentemp\Clock_3.h" value="HEADER;;;;;Clock_3" />
-  <file name="C:\Users\dgitau\PSoC Creator\car_lab_ele_302-navigation\SpeedControl.cydsn\codegentemp\Comparator_Counter.c" value="SOURCE_C;CortexM3;;;;Comparator_Counter" />
-  <file name="C:\Users\dgitau\PSoC Creator\car_lab_ele_302-navigation\SpeedControl.cydsn\codegentemp\Comparator_Counter.h" value="HEADER;;;;;Comparator_Counter" />
-  <file name="C:\Users\dgitau\PSoC Creator\car_lab_ele_302-navigation\SpeedControl.cydsn\codegentemp\Comparator_Counter_PM.c" value="SOURCE_C;CortexM3;;;;Comparator_Counter" />
-  <file name="C:\Users\dgitau\PSoC Creator\car_lab_ele_302-navigation\SpeedControl.cydsn\codegentemp\Clock_4.c" value="SOURCE_C;CortexM3;;;;Clock_4" />
-  <file name="C:\Users\dgitau\PSoC Creator\car_lab_ele_302-navigation\SpeedControl.cydsn\codegentemp\Clock_4.h" value="HEADER;;;;;Clock_4" />
+  <file name="C:\Users\dgitau\PSoC Creator\car_lab_ele_302-navigation\SpeedControl.cydsn\codegentemp\Comparator_Interrupt.c" value="SOURCE_C;CortexM3;;;;Comparator_Interrupt" />
+  <file name="C:\Users\dgitau\PSoC Creator\car_lab_ele_302-navigation\SpeedControl.cydsn\codegentemp\Comparator_Interrupt.h" value="HEADER;;;;;Comparator_Interrupt" />
+  <file name="C:\Users\dgitau\PSoC Creator\car_lab_ele_302-navigation\SpeedControl.cydsn\codegentemp\Pin_2_aliases.h" value="HEADER;;;;;Pin_2" />
+  <file name="C:\Users\dgitau\PSoC Creator\car_lab_ele_302-navigation\SpeedControl.cydsn\codegentemp\Pin_2.c" value="SOURCE_C;CortexM3;;;;Pin_2" />
+  <file name="C:\Users\dgitau\PSoC Creator\car_lab_ele_302-navigation\SpeedControl.cydsn\codegentemp\Pin_2.h" value="HEADER;;;;;Pin_2" />
   <file name="C:\Users\dgitau\PSoC Creator\car_lab_ele_302-navigation\SpeedControl.cydsn\codegentemp\from_composite_sync_out_aliases.h" value="HEADER;;;;;from_composite_sync_out" />
   <file name="C:\Users\dgitau\PSoC Creator\car_lab_ele_302-navigation\SpeedControl.cydsn\codegentemp\from_composite_sync_out.c" value="SOURCE_C;CortexM3;;;;from_composite_sync_out" />
   <file name="C:\Users\dgitau\PSoC Creator\car_lab_ele_302-navigation\SpeedControl.cydsn\codegentemp\from_composite_sync_out.h" value="HEADER;;;;;from_composite_sync_out" />
   <file name="C:\Users\dgitau\PSoC Creator\car_lab_ele_302-navigation\SpeedControl.cydsn\codegentemp\Composite_Sync_Interrupt.c" value="SOURCE_C;CortexM3;;;;Composite_Sync_Interrupt" />
   <file name="C:\Users\dgitau\PSoC Creator\car_lab_ele_302-navigation\SpeedControl.cydsn\codegentemp\Composite_Sync_Interrupt.h" value="HEADER;;;;;Composite_Sync_Interrupt" />
-  <file name="C:\Users\dgitau\PSoC Creator\car_lab_ele_302-navigation\SpeedControl.cydsn\codegentemp\Clock_5.c" value="SOURCE_C;CortexM3;;;;Clock_5" />
-  <file name="C:\Users\dgitau\PSoC Creator\car_lab_ele_302-navigation\SpeedControl.cydsn\codegentemp\Clock_5.h" value="HEADER;;;;;Clock_5" />
-  <file name="C:\Users\dgitau\PSoC Creator\car_lab_ele_302-navigation\SpeedControl.cydsn\codegentemp\Vertical_Sync_Counter.c" value="SOURCE_C;CortexM3;;;;Vertical_Sync_Counter" />
-  <file name="C:\Users\dgitau\PSoC Creator\car_lab_ele_302-navigation\SpeedControl.cydsn\codegentemp\Vertical_Sync_Counter.h" value="HEADER;;;;;Vertical_Sync_Counter" />
-  <file name="C:\Users\dgitau\PSoC Creator\car_lab_ele_302-navigation\SpeedControl.cydsn\codegentemp\Vertical_Sync_Counter_PM.c" value="SOURCE_C;CortexM3;;;;Vertical_Sync_Counter" />
   <file name="C:\Users\dgitau\PSoC Creator\car_lab_ele_302-navigation\SpeedControl.cydsn\codegentemp\from_vertical_sync_out_aliases.h" value="HEADER;;;;;from_vertical_sync_out" />
   <file name="C:\Users\dgitau\PSoC Creator\car_lab_ele_302-navigation\SpeedControl.cydsn\codegentemp\from_vertical_sync_out.c" value="SOURCE_C;CortexM3;;;;from_vertical_sync_out" />
   <file name="C:\Users\dgitau\PSoC Creator\car_lab_ele_302-navigation\SpeedControl.cydsn\codegentemp\from_vertical_sync_out.h" value="HEADER;;;;;from_vertical_sync_out" />
-  <file name="C:\Users\dgitau\PSoC Creator\car_lab_ele_302-navigation\SpeedControl.cydsn\codegentemp\Vertical_Sync_Interrupt.c" value="SOURCE_C;CortexM3;;;;Vertical_Sync_Interrupt" />
-  <file name="C:\Users\dgitau\PSoC Creator\car_lab_ele_302-navigation\SpeedControl.cydsn\codegentemp\Vertical_Sync_Interrupt.h" value="HEADER;;;;;Vertical_Sync_Interrupt" />
-  <file name="C:\Users\dgitau\PSoC Creator\car_lab_ele_302-navigation\SpeedControl.cydsn\codegentemp\Comparator_Interrupt.c" value="SOURCE_C;CortexM3;;;;Comparator_Interrupt" />
-  <file name="C:\Users\dgitau\PSoC Creator\car_lab_ele_302-navigation\SpeedControl.cydsn\codegentemp\Comparator_Interrupt.h" value="HEADER;;;;;Comparator_Interrupt" />
+  <file name="C:\Users\dgitau\PSoC Creator\car_lab_ele_302-navigation\SpeedControl.cydsn\codegentemp\Pin_1_aliases.h" value="HEADER;;;;;Pin_1" />
+  <file name="C:\Users\dgitau\PSoC Creator\car_lab_ele_302-navigation\SpeedControl.cydsn\codegentemp\Pin_1.c" value="SOURCE_C;CortexM3;;;;Pin_1" />
+  <file name="C:\Users\dgitau\PSoC Creator\car_lab_ele_302-navigation\SpeedControl.cydsn\codegentemp\Pin_1.h" value="HEADER;;;;;Pin_1" />
+  <file name="C:\Users\dgitau\PSoC Creator\car_lab_ele_302-navigation\SpeedControl.cydsn\codegentemp\Timer_1.c" value="SOURCE_C;CortexM3;;;;Timer_1" />
+  <file name="C:\Users\dgitau\PSoC Creator\car_lab_ele_302-navigation\SpeedControl.cydsn\codegentemp\Timer_1.h" value="HEADER;;;;;Timer_1" />
+  <file name="C:\Users\dgitau\PSoC Creator\car_lab_ele_302-navigation\SpeedControl.cydsn\codegentemp\Timer_1_PM.c" value="SOURCE_C;CortexM3;;;;Timer_1" />
+  <file name="C:\Users\dgitau\PSoC Creator\car_lab_ele_302-navigation\SpeedControl.cydsn\codegentemp\Clock_6.c" value="SOURCE_C;CortexM3;;;;Clock_6" />
+  <file name="C:\Users\dgitau\PSoC Creator\car_lab_ele_302-navigation\SpeedControl.cydsn\codegentemp\Clock_6.h" value="HEADER;;;;;Clock_6" />
+  <file name="C:\Users\dgitau\PSoC Creator\car_lab_ele_302-navigation\SpeedControl.cydsn\codegentemp\Timer_2.c" value="SOURCE_C;CortexM3;;;;Timer_2" />
+  <file name="C:\Users\dgitau\PSoC Creator\car_lab_ele_302-navigation\SpeedControl.cydsn\codegentemp\Timer_2.h" value="HEADER;;;;;Timer_2" />
+  <file name="C:\Users\dgitau\PSoC Creator\car_lab_ele_302-navigation\SpeedControl.cydsn\codegentemp\Timer_2_PM.c" value="SOURCE_C;CortexM3;;;;Timer_2" />
   <file name="C:\Users\dgitau\PSoC Creator\car_lab_ele_302-navigation\SpeedControl.cydsn\codegentemp\LCD_LCDPort_aliases.h" value="HEADER;;;;;LCD_LCDPort" />
   <file name="C:\Users\dgitau\PSoC Creator\car_lab_ele_302-navigation\SpeedControl.cydsn\codegentemp\LCD_LCDPort.c" value="SOURCE_C;CortexM3;;;;LCD_LCDPort" />
   <file name="C:\Users\dgitau\PSoC Creator\car_lab_ele_302-navigation\SpeedControl.cydsn\codegentemp\LCD_LCDPort.h" value="HEADER;;;;;LCD_LCDPort" />
